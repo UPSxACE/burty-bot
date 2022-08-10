@@ -1,8 +1,29 @@
+const { Collection } = require('discord.js');
 const { Client, GatewayIntentBits } = require('discord.js');
 require('dotenv').config();
+const fs = require('node:fs');
+const path = require('node:path');
+
+const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
+
 // Create a new client instance
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
-const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
+
+// Read the commands folder, and add every .js file to a Collection object "client.commands"
+client.commands = new Collection();
+const commandsPath = path.join(__dirname, 'commands');
+const commandFiles = fs
+  .readdirSync(commandsPath)
+  .filter((file) => file.endsWith('.js'));
+
+for (const file of commandFiles) {
+  const filePath = path.join(commandsPath, file);
+  const command = require(filePath);
+  // Set a new item in the Collection
+  // With the key as the command name and the value as the exported module
+  client.commands.set(command.data.name, command);
+}
+
 // When the client is ready, run this code (only once)
 client.once('ready', () => {
   console.log('Ready!');
@@ -11,14 +32,19 @@ client.once('ready', () => {
 client.on('interactionCreate', async (interaction) => {
   if (!interaction.isChatInputCommand()) return;
 
-  const { commandName } = interaction;
+  // After this line believe the variable "command" will have everything exported from the respective file "{interaction.commandName}.js"
+  const command = client.commands.get(interaction.commandName);
 
-  if (commandName === 'ping') {
-    await interaction.reply('Pong!');
-  } else if (commandName === 'server') {
-    await interaction.reply('Server info.');
-  } else if (commandName === 'user') {
-    await interaction.reply('User info.');
+  if (!command) return;
+
+  try {
+    await command.execute(interaction);
+  } catch (error) {
+    console.error(error);
+    await interaction.reply({
+      content: 'There was an error while executing this command!',
+      ephemeral: true,
+    });
   }
 });
 
