@@ -7,4 +7,7 @@ module.exports = {
   async execute(interaction) {
     await interaction.reply('Pong!');
   },
+  async executeManual(message, content) {
+    await message.reply(`This is working! Message content: ${content}`);
+  },
 };

@@ -7,7 +7,13 @@ const path = require('node:path');
 const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
 
 // Create a new client instance
-const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+const client = new Client({
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent,
+  ],
+});
 
 // Read the commands folder, and add every .js file to a Collection object "client.commands"
 client.commands = new Collection();
