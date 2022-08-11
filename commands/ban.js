@@ -5,7 +5,10 @@ module.exports = {
     .setName('ban')
     .setDescription('Bans a user.')
     .addUserOption((option) =>
-      option.setName('target').setDescription('The member to ban.')
+      option
+        .setName('target')
+        .setDescription('The member to ban.')
+        .setRequired(true)
     )
     .setDefaultMemberPermissions(
       PermissionFlagsBits.KickMembers | PermissionFlagsBits.BanMembers
