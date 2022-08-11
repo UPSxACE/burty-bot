@@ -8,6 +8,6 @@ module.exports = {
     await interaction.reply('Pong!');
   },
   async executeManual(message, content) {
-    await message.reply(`This is working! Message content: ${content}`);
+    await message.reply('Pong!');
   },
 };
