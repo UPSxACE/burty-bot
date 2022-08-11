@@ -10,6 +10,5 @@ module.exports = {
   async execute(interaction) {
     const user = interaction.options.getUser('target');
     guild.members.ban(user);
-  
-},
+    },
 };
