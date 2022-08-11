@@ -29,7 +29,11 @@ module.exports = {
           return;
         }
       } else {
-        message.reply("Choose a command! I'm Ready!");
+        console.log(content);
+        if (content.length === 1) {
+          message.reply("Choose a command! I'm Ready!");
+        }
+        return;
       }
     } else {
       console.log("It's not a command.");
