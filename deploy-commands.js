@@ -24,6 +24,15 @@ for (const file of commandFiles) {
 
 const rest = new REST({ version: '10' }).setToken(DISCORD_TOKEN);
 
+// delete old
+/*
+rest
+  .put(Routes.applicationCommands(CLIENT_ID), { body: [] })
+  .then(() => console.log('Successfully deleted all application commands.'))
+  .catch(console.error);
+*/
+
+// deploy new
 rest
   .put(Routes.applicationGuildCommands(CLIENT_ID, SERVER_ID), {
     headers: { Authorization: `Bot ${DISCORD_TOKEN}` },
