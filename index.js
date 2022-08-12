@@ -3,8 +3,11 @@ const { Client, GatewayIntentBits } = require('discord.js');
 require('dotenv').config();
 const fs = require('node:fs');
 const path = require('node:path');
+const mongoose = require('mongoose');
+const testSchema = require('./test-schema');
 
 const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
+const MONGO_URI = process.env.MONGO_URI;
 
 // Create a new client instance
 const client = new Client({
@@ -62,6 +65,15 @@ client.on('interactionCreate', async (interaction) => {
       ephemeral: true,
     });
   }
+});
+
+client.on('ready', async () => {
+  await mongoose.connect(MONGO_URI, {
+    keepAlive: true,
+  });
+  console.log('Connected to MongoDB Schema!');
+
+  // new testSchema({ message: 'hellow world' }).save();
 });
 
 // Login to Discord with your client's token
