@@ -4,7 +4,9 @@ require('dotenv').config();
 const fs = require('node:fs');
 const path = require('node:path');
 const mongoose = require('mongoose');
-const testSchema = require('./test-schema');
+
+// Modules:
+const serverConfig = require('./modules/serverConfig');
 
 const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
 const MONGO_URI = process.env.MONGO_URI;
@@ -57,7 +59,14 @@ client.on('interactionCreate', async (interaction) => {
   if (!command) return;
 
   try {
-    await command.execute(interaction);
+    // Some commands require special modules
+    switch (interaction.commandName) {
+      case 'config':
+        await command.execute(interaction, serverConfig);
+        break;
+      default:
+        await command.execute(interaction);
+    }
   } catch (error) {
     console.error(error);
     await interaction.reply({
@@ -71,7 +80,10 @@ client.on('ready', async () => {
   await mongoose.connect(MONGO_URI, {
     keepAlive: true,
   });
-  console.log('Connected to MongoDB Schema!');
+  console.log('Connected to MongoDB Database!');
+
+  // Load modules
+  // serverConfig(client);
 
   // new testSchema({ message: 'hellow world' }).save();
 });
