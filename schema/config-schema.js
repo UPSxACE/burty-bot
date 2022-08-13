@@ -1,9 +1,10 @@
 const mongoose = require('mongoose');
 
 const configSchema = new mongoose.Schema({
-  message: {
-    type: String,
-    required: true,
+  _id: { type: String },
+  setlogging: {
+    type: Boolean,
+    // required: true,
   },
 });
 

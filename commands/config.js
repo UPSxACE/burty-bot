@@ -20,13 +20,29 @@ module.exports = {
       case 'setlogging':
         console.log('Set logging triggered');
         if (serverConfig.cache[interaction.guildId]) {
-          console.log('Server config:' + serverConfig);
+          console.log('Guild server config is cached!');
+          console.log('Server config:');
+          console.log(
+            'Set logging: ' + serverConfig.cache[interaction.guildId].setlogging
+          );
         } else {
+          console.log('Guild server config is not cached :/');
+          console.log("Let's fetch it!");
+          await serverConfig.cache.fetch(interaction.guildId);
+          console.log('Fetched!!!');
+          console.log('Server config:');
+
+          console.log(
+            'Set logging: ' + serverConfig.cache[interaction.guildId].setlogging
+          );
+
+          /*
           console.log('This server config is not cached yet');
           if (serverConfig.cache['test1']) {
             console.log('Test worked tho');
             console.log('test1: ' + serverConfig.cache['test1']);
           }
+          */
         }
         break;
       default:

@@ -77,14 +77,13 @@ client.on('interactionCreate', async (interaction) => {
 });
 
 client.on('ready', async () => {
-  await mongoose.connect(MONGO_URI, {
-    keepAlive: true,
-  });
-  console.log('Connected to MongoDB Database!');
-
+  // Test if mongo connection works:
+  // await mongoose.connect(MONGO_URI, {
+  //  keepAlive: true,
+  // });
+  // console.log('Connected to MongoDB Database!');
   // Load modules
   // serverConfig(client);
-
   // new testSchema({ message: 'hellow world' }).save();
 });
 
