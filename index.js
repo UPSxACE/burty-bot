@@ -5,6 +5,15 @@ const fs = require('node:fs');
 const path = require('node:path');
 const mongoose = require('mongoose');
 
+process.on('SIGINT', () => {
+  mongoose.connection.close(() => {
+    console.log(
+      'Mongoose default connection disconnected through app termination'
+    );
+    process.exit(0);
+  });
+});
+
 // Modules:
 const serverConfig = require('./modules/serverConfig');
 
@@ -77,11 +86,12 @@ client.on('interactionCreate', async (interaction) => {
 });
 
 client.on('ready', async () => {
-  // Test if mongo connection works:
-  // await mongoose.connect(MONGO_URI, {
-  //  keepAlive: true,
-  // });
-  // console.log('Connected to MongoDB Database!');
+  await mongoose.connect(MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    keepAlive: true,
+  });
+  console.log('Connected to MongoDB Database!');
   // Load modules
   // serverConfig(client);
   // new testSchema({ message: 'hellow world' }).save();

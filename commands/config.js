@@ -144,7 +144,7 @@ module.exports = {
             welcomemessage: message,
           });
         }
-        await interaction.reply('Starboard channel settings updated!');
+        await interaction.reply('Welcome message updated!');
         break;
       default:
         console.log('Default case triggered. Something went wrong.');
