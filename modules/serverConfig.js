@@ -1,8 +1,6 @@
 const configSchema = require('../schema/config-schema');
 
 async function updateServerConfig(guildId, updateConfigArgsObject) {
-  // await mongo().then(async (mongoose) => {
-  // try {
   // if it exists, find by guildId
   await configSchema.findOneAndUpdate(
     {
@@ -18,12 +16,7 @@ async function updateServerConfig(guildId, updateConfigArgsObject) {
 
   // Updated cached data with new values
   cache[guildId] = await configSchema.findOne({ _id: guildId });
-  // } finally {
-  // mongoose.connection.close();
-  // }
 }
-// );
-// }
 
 // guildId: {}
 const cache = {

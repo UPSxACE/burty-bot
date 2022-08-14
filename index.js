@@ -92,9 +92,6 @@ client.on('ready', async () => {
     keepAlive: true,
   });
   console.log('Connected to MongoDB Database!');
-  // Load modules
-  // serverConfig(client);
-  // new testSchema({ message: 'hellow world' }).save();
 });
 
 // Login to Discord with your client's token
