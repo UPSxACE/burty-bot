@@ -1,7 +1,7 @@
-const mongo = require('../mongo');
+const mongo = require('./mongo');
 const configSchema = require('../schema/config-schema');
 
-async function fetchServerConfig(guildId) {
+async function updateServerConfig(guildId, updateConfigArgsObject) {
   await mongo().then(async (mongoose) => {
     try {
       // if it exists, find by guildId
@@ -9,16 +9,15 @@ async function fetchServerConfig(guildId) {
         {
           _id: guildId,
         },
-        // if it doesn't exist, create one with default configs
-        {
-          _id: guildId,
-          setlogging: false,
-        },
+        // if it doesn't exist, create one with the new configs
+        { ...updateConfigArgsObject, _id: guildId },
         // (mongoose settings to make it either update or insert)
         {
           upsert: true,
         }
       );
+
+      // Updated cached data with new values
       cache[guildId] = await configSchema.findOne({ _id: guildId });
     } finally {
       mongoose.connection.close();
@@ -28,8 +27,8 @@ async function fetchServerConfig(guildId) {
 
 // guildId: {}
 const cache = {
-  async fetch(guildId) {
-    await fetchServerConfig(guildId);
+  async update(guildId, updateConfigArgsObject) {
+    await updateServerConfig(guildId, updateConfigArgsObject);
   },
 };
 
