@@ -6,7 +6,8 @@ function fetchAttachments(oldMessage) {
   oldMessage.attachments.each(
     (attachment) =>
       (attachmentString =
-        attachmentString + `Old Message Attachment(URL): ${attachment.url}\n`)
+        attachmentString +
+        `**Old Message Attachment(URL):** ${attachment.url}\n`)
   );
 
   return attachmentString;
@@ -27,7 +28,6 @@ module.exports = {
         (channelobject) =>
           channelobject.id === serverConfig.cache[oldMessage.guildId].setlogging
       );
-      console.log('HERE: ' + typeof newMessage.editedAt);
       target_channel.send({
         embeds: [
           {
