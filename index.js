@@ -15,7 +15,8 @@ process.on('SIGINT', () => {
 });
 
 // Modules:
-const serverConfig = require('./modules/serverConfig');
+// const serverConfig = require('./modules/serverConfig');
+// const profilesTracker = require('./modules/profilesTracker');
 
 const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
 const MONGO_URI = process.env.MONGO_URI;
@@ -71,13 +72,13 @@ client.on('interactionCreate', async (interaction) => {
 
   try {
     // Some commands require special modules
-    switch (interaction.commandName) {
-      case 'config':
-        await command.execute(interaction, serverConfig);
-        break;
-      default:
-        await command.execute(interaction);
-    }
+    // switch (interaction.commandName) {
+    // case 'config':
+    // await command.execute(interaction, serverConfig);
+    // break;
+    // default:
+    await command.execute(interaction);
+    // }
   } catch (error) {
     console.error(error);
     await interaction.reply({

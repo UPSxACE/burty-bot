@@ -1,4 +1,5 @@
 const { SlashCommandBuilder } = require('discord.js');
+const serverConfig = require('../modules/serverConfig');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -66,7 +67,7 @@ module.exports = {
             .setDescription('The message that will be sent')
         )
     ),
-  async execute(interaction, serverConfig) {
+  async execute(interaction) {
     let channel = '';
     let message = '';
     // const subcommand = await ;
