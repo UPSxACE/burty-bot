@@ -53,7 +53,7 @@ module.exports = {
         {
           title: 'Global Ranking',
           description: `${generateLeaderboard(message.client)}`,
-          color: 14367804,
+          color: 15953368,
           footer: {
             text: 'This feature is still in alpha version! Soon it will look prettier!',
           },
