@@ -16,5 +16,6 @@ module.exports = {
   async execute(interaction) {
     const member = interaction.options.getUser('target');
     interaction.guild.members.kick(member);
+    interaction.reply('User was successfully kicked!');
   },
 };
