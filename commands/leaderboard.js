@@ -1,7 +1,7 @@
 const { SlashCommandBuilder } = require('discord.js');
 const leaderboard = require('../modules/leaderboard');
 
-function generateLeaderboard(client) {
+async function generateLeaderboard(client) {
   let result = '';
 
   // iterate through first 10 from the leaderboard
@@ -9,13 +9,24 @@ function generateLeaderboard(client) {
     if (i + 1 > leaderboard.cache['leaderboard'].length) {
       break;
     }
-    result += `**#${('00' + (i + 1)).slice(-2)} - ${
-      client.users.cache.find(
-        (user) => user.id === leaderboard.cache['leaderboard'][i]['_id']
-      ).username
-    } - level ${leaderboard.cache['leaderboard'][i].level} [ ${
+
+    let user = await client.users.fetch(
+      leaderboard.cache['leaderboard'][i]['_id']
+    );
+
+    result += `**#${('00' + (i + 1)).slice(-2)} - ${user.username} - level ${
+      leaderboard.cache['leaderboard'][i].level
+        ? leaderboard.cache['leaderboard'][i].level
+        : 1
+    } [ ${
       leaderboard.cache['leaderboard'][i].currentXP
-    }/${leaderboard.cache['leaderboard'][i].maxXP} XP ]**\n`;
+        ? leaderboard.cache['leaderboard'][i].currentXP
+        : 0
+    }/${
+      leaderboard.cache['leaderboard'][i].maxXP
+        ? leaderboard.cache['leaderboard'][i].maxXP
+        : 200
+    } XP ]**\n`;
   }
 
   if (result != '') {
@@ -35,7 +46,7 @@ module.exports = {
       embeds: [
         {
           title: 'Global Ranking',
-          description: `${generateLeaderboard(interaction.client)}`,
+          description: `${await generateLeaderboard(interaction.client)}`,
           color: 14367804,
           footer: {
             text: 'This feature is still in alpha version! Soon it will look prettier!',
@@ -52,7 +63,7 @@ module.exports = {
       embeds: [
         {
           title: 'Global Ranking',
-          description: `${generateLeaderboard(message.client)}`,
+          description: `${await generateLeaderboard(message.client)}`,
           color: 15953368,
           footer: {
             text: 'This feature is still in alpha version! Soon it will look prettier!',

@@ -1,6 +1,148 @@
 const profilesSchema = require('../schema/profiles-schema');
 const maxXpPerLevel = 200;
 
+function rewardDaily(userObject, streakLevel) {
+  let daily_claim_message = '';
+
+  switch (streakLevel) {
+    case 1:
+      userObject.coins = userObject.coins ? userObject.coins + 100 : 100;
+      addXP(userObject, 100);
+      daily_claim_message =
+        "You've successefully claimed 100 coins and 100 XP from the daily reward! Streak Points: 1!";
+      break;
+    case 2:
+      userObject.coins = userObject.coins ? userObject.coins + 150 : 150;
+      addXP(userObject, 100);
+      daily_claim_message =
+        "You've successefully claimed 150 coins and 100 XP from the daily reward! Streak Points: 2!";
+      break;
+    case 3:
+      userObject.coins = userObject.coins ? userObject.coins + 210 : 210;
+      addXP(userObject, 100);
+      daily_claim_message =
+        "You've successefully claimed 210 coins and 100 XP from the daily reward! Streak Points: 3!";
+      break;
+    case 4:
+      userObject.coins = userObject.coins ? userObject.coins + 280 : 280;
+      addXP(userObject, 100);
+      daily_claim_message =
+        "You've successefully claimed 280 Coins and 100XP from the daily reward! Streak Points: 4!";
+      break;
+    case 5:
+      userObject.coins = userObject.coins ? userObject.coins + 360 : 360;
+      addXP(userObject, 100);
+      daily_claim_message =
+        "You've successefully claimed 360 Coins and 100XP from the daily reward! Streak Points: 5!";
+      break;
+    case 6:
+      userObject.coins = userObject.coins ? userObject.coins + 420 : 420;
+      addXP(userObject, 100);
+      daily_claim_message =
+        "You've successefully claimed 420 Coins and 100XP from the daily reward! Streak Points: 6!";
+      break;
+    case 7:
+      userObject.coins = userObject.coins ? userObject.coins + 500 : 500;
+      addXP(userObject, 100);
+      daily_claim_message =
+        "You've successefully claimed 500 Coins and 100XP from the daily reward! Streak Points: 7!";
+      break;
+    default:
+      console.log('Something went wrong on the daily reward switch statement!');
+  }
+
+  return daily_claim_message;
+}
+
+async function daily(userId) {
+  let daily_claim_message = '';
+
+  if (!cache[userId]) {
+    // if it exists, find by memberId
+    await profilesSchema.findOneAndUpdate(
+      {
+        _id: userId,
+      },
+      // if it doesn't exist create one, if it exists update with the new configs
+      { _id: userId },
+      // (mongoose settings to make it either update or insert)
+      {
+        upsert: true,
+      }
+    );
+
+    // Updated cached data with new values
+    cache[userId] = await profilesSchema.findOne({ _id: userId });
+  }
+
+  if (!cache[userId].streakLevel) {
+    cache[userId].streakLevel = 0;
+  }
+
+  const lastDaily = cache[userId].lastDailyClaimedMlSec
+    ? cache[userId].lastDailyClaimedMlSec
+    : null;
+
+  // console.log(lastDaily);
+
+  if (lastDaily) {
+    // 24 hours
+    const dayMlSeconds = 24 * 60 * 60 * 1000;
+    const nowMlSeconds = new Date().getTime();
+    const lastDailyMlSeconds = cache[userId].lastDailyClaimedMlSec;
+    const difMlSeconds = nowMlSeconds - lastDailyMlSeconds;
+    const div24 = difMlSeconds / dayMlSeconds;
+    // console.log('dif: ' + difMlSeconds + ' day: ' + dayMlSeconds);
+
+    // REVISE THIS MiliSec LOGIC!!!
+    if (difMlSeconds < dayMlSeconds) {
+      daily_claim_message =
+        "It's still too early to claim your next daily reward!";
+    } else if (difMlSeconds > dayMlSeconds * 7) {
+      cache[userId].streakLevel = 0;
+      cache[userId].lastDailyClaimedMlSec = nowMlSeconds;
+      cache[userId].streakLevel += 1;
+      if (cache[userId].streakLevel > 7) {
+        cache[userId].streakLevel = 7;
+      }
+      daily_claim_message = rewardDaily(
+        cache[userId],
+        cache[userId].streakLevel
+      );
+    } else {
+      cache[userId].streakLevel = cache[userId].streakLevel - Math.trunc(div24);
+      if (cache[userId].streakLevel < 0) {
+        cache[userId].streakLevel = 0;
+      }
+      cache[userId].lastDailyClaimedMlSec = nowMlSeconds;
+      cache[userId].streakLevel += 1;
+      if (cache[userId].streakLevel > 7) {
+        cache[userId].streakLevel = 7;
+      }
+      daily_claim_message = rewardDaily(
+        cache[userId],
+        cache[userId].streakLevel
+      );
+    }
+  } else {
+    cache[userId].lastDailyClaimedMlSec = new Date().getTime();
+    cache[userId].streakLevel = 1;
+    daily_claim_message = rewardDaily(cache[userId], 1);
+  }
+
+  // Updated cached data with new values
+  cache[userId] = await updateProfile(userId, {
+    _id: userId,
+    level: cache[userId].level,
+    currentXP: cache[userId].currentXP,
+    maxXP: cache[userId].maxXP,
+    streakLevel: cache[userId].streakLevel,
+    lastDailyClaimedMlSec: cache[userId].lastDailyClaimedMlSec,
+    coins: cache[userId].coins,
+  });
+  return daily_claim_message;
+}
+
 function levelUp(level, currentXP, maxXP) {
   level += 1;
   currentXP = currentXP - maxXP;
@@ -179,6 +321,10 @@ const cache = {
   },
   async rewardXPAP(memberId, xpAmmount, apAmmount) {
     await rewardMemberXPAP(memberId, xpAmmount, apAmmount);
+  },
+  async claimDaily(userId) {
+    const daily_reward_message = await daily(userId);
+    return daily_reward_message;
   },
 };
 

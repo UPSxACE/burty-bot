@@ -6,6 +6,7 @@ const profilesSchema = new mongoose.Schema({
   currentXP: { type: Number },
   maxXP: { type: Number },
   activityPoints: { type: Number },
+  lastDailyClaimedMlSec: { type: Number },
   streakLevel: { type: Number },
   coins: { type: Number },
   customUsername: { type: String },

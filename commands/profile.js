@@ -19,6 +19,8 @@ module.exports = {
         await profilesTracker.cache.update(target_user.id, {});
       }
 
+      const user = await interaction.client.users.fetch(target_user.id);
+
       interaction.reply({
         content: null,
         embeds: [
@@ -92,9 +94,7 @@ module.exports = {
               text: 'This feature is still in alpha version! Soon it will look prettier!',
             },
             thumbnail: {
-              url: `${interaction.client.users.cache
-                .find((user) => user.id === target_user.id)
-                .avatarURL()}`,
+              url: `${user.avatarURL()}`,
             },
           },
         ],
