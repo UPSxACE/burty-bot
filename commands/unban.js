@@ -2,20 +2,20 @@ const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName('ban')
-    .setDescription('Bans a user.')
+    .setName('unban')
+    .setDescription('Unbans a user.')
     .addUserOption((option) =>
       option
         .setName('target')
-        .setDescription('The member to ban.')
+        .setDescription('The member to unban.')
         .setRequired(true)
     )
     .setDefaultMemberPermissions(
       PermissionFlagsBits.KickMembers | PermissionFlagsBits.BanMembers
     ),
   async execute(interaction) {
-    const user = interaction.options.getUser('target');
-    interaction.guild.members.ban(user);
-    interaction.reply('User was successfully banned!');
+    const id = interaction.options.get('target')?.value;
+    interaction.guild.members.unban(id);
+    interaction.reply('User was successfully unbanned!');
   },
 };
