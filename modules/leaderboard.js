@@ -5,7 +5,7 @@ let timeout = null;
 const cache = {
   async update() {
     if (!cache['leaderboard'] || !timeout) {
-      console.log('Leaderboard updated');
+      // console.log('Leaderboard updated');
       cache['leaderboard'] = await profilesSchema.find().sort({
         activityPoints: 'desc',
       });
@@ -14,10 +14,10 @@ const cache = {
         timeout = null;
       }, 6000);
 
-      console.log(JSON.stringify(cache['leaderboard']));
+      // console.log(JSON.stringify(cache['leaderboard']));
     } else {
-      console.log('Sending cached version of leaderboard');
-      console.log(JSON.stringify(cache['leaderboard']));
+      // console.log('Sending cached version of leaderboard');
+      // console.log(JSON.stringify(cache['leaderboard']));
     }
   },
 };
