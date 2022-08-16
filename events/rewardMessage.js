@@ -1,6 +1,5 @@
 // profilesTracker event
 const profilesTracker = require('../modules/profilesTracker');
-const { listenerCount } = require('../schema/profiles-schema');
 const messageRewardTimeout = [];
 
 module.exports = {
@@ -37,10 +36,7 @@ module.exports = {
 
       // for now, the reward is the same ammount for both XP and activity points (can change in the future though)
       await profilesTracker.cache.rewardXPAP(message.author.id, reward, reward);
-      console
-        .log
-        // message.author.username + ' rewarded with ' + reward + ' XP and AP!'
-        ();
+      // console.log(message.author.username + ' rewarded with ' + reward + ' XP and AP!');
     } else {
       // console.log(message.author.username + ' message not rewarded!');
     }
