@@ -34,7 +34,7 @@ function addXP(memberObject, newXP) {
   }
 }
 
-async function updateServerConfig(memberId, updateConfigArgsObject) {
+async function updateProfile(memberId, updateConfigArgsObject) {
   // if it exists, find by memberId
   await profilesSchema.findOneAndUpdate(
     {
@@ -50,6 +50,79 @@ async function updateServerConfig(memberId, updateConfigArgsObject) {
 
   // Updated cached data with new values
   cache[memberId] = await profilesSchema.findOne({ _id: memberId });
+}
+async function updateInviteMerge(serverId, inviterId, memberWhoJoinedId) {
+  if (!cache[inviterId]) {
+    // if it exists, find by memberId
+    await profilesSchema.findOneAndUpdate(
+      {
+        _id: inviterId,
+      },
+      // if it doesn't exist create one, if it exists update with the new configs
+      { _id: inviterId },
+      // (mongoose settings to make it either update or insert)
+      {
+        upsert: true,
+      }
+    );
+
+    // Updated cached data with new values
+    cache[inviterId] = await profilesSchema.findOne({ _id: inviterId });
+  }
+
+  if (!cache[memberWhoJoinedId]) {
+    // if it exists, find by memberId
+    await profilesSchema.findOneAndUpdate(
+      {
+        _id: memberWhoJoinedId,
+      },
+      // if it doesn't exist create one, if it exists update with the new configs
+      { _id: memberWhoJoinedId },
+      // (mongoose settings to make it either update or insert)
+      {
+        upsert: true,
+      }
+    );
+
+    // Updated cached data with new values
+    cache[memberWhoJoinedId] = await profilesSchema.findOne({
+      _id: memberWhoJoinedId,
+    });
+  }
+
+  if (!cache[inviterId]['inviteCountGlobal']) {
+    cache[inviterId]['inviteCountGlobal'] = 0;
+  }
+
+  if (!cache[inviterId]['inviteCountServer']) {
+    cache[inviterId]['inviteCountServer'] = {};
+  }
+
+  if (!cache[inviterId]['inviteCountServer'][serverId]) {
+    cache[inviterId]['inviteCountServer'][serverId] = {
+      count: 0,
+      invitedPeople: [],
+    };
+  }
+
+  cache[inviterId]['inviteCountGlobal'] += 1;
+  cache[inviterId]['inviteCountServer'][serverId]['count'] += 1;
+  cache[inviterId]['inviteCountServer'][serverId]['invitedPeople'] = [
+    ...cache[inviterId]['inviteCountServer'][serverId]['invitedPeople'],
+    memberWhoJoinedId,
+  ];
+
+  cache[memberWhoJoinedId]['inviter'] = inviterId;
+  console.log('this: ' + JSON.stringify(cache[inviterId]['inviteCountGlobal']));
+  console.log('that: ' + JSON.stringify(cache[inviterId]['inviteCountServer']));
+
+  await updateProfile(inviterId, {
+    inviteCountGlobal: cache[inviterId]['inviteCountGlobal'],
+    inviteCountServer: cache[inviterId]['inviteCountServer'],
+  });
+  await updateProfile(memberWhoJoinedId, {
+    inviter: cache[memberWhoJoinedId]['inviter'],
+  });
 }
 
 async function rewardMemberXPAP(memberId, xpAmmount, apAmmount) {
@@ -95,7 +168,10 @@ async function rewardMemberXPAP(memberId, xpAmmount, apAmmount) {
 // memberId: {}
 const cache = {
   async update(memberId, updateConfigArgsObject) {
-    await updateServerConfig(memberId, updateConfigArgsObject);
+    await updateProfile(memberId, updateConfigArgsObject);
+  },
+  async updateInvite(serverId, inviterId, memberId) {
+    await updateInviteMerge(serverId, inviterId, memberId);
   },
   async rewardXPAP(memberId, xpAmmount, apAmmount) {
     await rewardMemberXPAP(memberId, xpAmmount, apAmmount);

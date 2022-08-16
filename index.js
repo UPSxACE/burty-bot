@@ -4,6 +4,7 @@ require('dotenv').config();
 const fs = require('node:fs');
 const path = require('node:path');
 const mongoose = require('mongoose');
+const profilesTracker = require('./modules/profilesTracker');
 
 process.on('SIGINT', () => {
   mongoose.connection.close(() => {
@@ -141,6 +142,12 @@ client.on('guildMemberAdd', async (member) => {
       `The code ${usedInvite.code} was just used by ${member.user.username}.`
     );
     console.log(`Invite owner ID: ${usedInvite.inviterId}`);
+
+    profilesTracker.cache.updateInvite(
+      member.guild.id,
+      usedInvite.inviterId,
+      member.id
+    );
   } catch (err) {
     console.log('OnGuildMemberAdd Error:', err);
   }
