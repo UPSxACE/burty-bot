@@ -112,7 +112,11 @@ async function updateInviteMerge(serverId, inviterId, memberWhoJoinedId) {
     memberWhoJoinedId,
   ];
 
-  cache[memberWhoJoinedId]['inviter'] = inviterId;
+  if (!cache[memberWhoJoinedId]['inviter']) {
+    cache[memberWhoJoinedId]['inviter'] = {};
+  }
+
+  cache[memberWhoJoinedId]['inviter'][serverId] = inviterId;
   console.log('this: ' + JSON.stringify(cache[inviterId]['inviteCountGlobal']));
   console.log('that: ' + JSON.stringify(cache[inviterId]['inviteCountServer']));
 

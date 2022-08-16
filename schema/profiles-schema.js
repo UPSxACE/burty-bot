@@ -13,7 +13,8 @@ const profilesSchema = new mongoose.Schema({
   currentTitle: { type: String },
   availableTitles: [String],
   inventory: [Object],
-  inviter: Number,
+  // inviter: {%serverID%: %inviterID%}
+  inviter: Object,
   inviteCountGlobal: Number,
   // Server ID = 012
   // inviteCountServer: {012 : { count: 123, invitedPeople:[123,152,155]}, ...} }
