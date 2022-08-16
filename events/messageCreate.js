@@ -36,7 +36,7 @@ module.exports = {
         return;
       }
     } else {
-      console.log("It's not a command.");
+      // console.log("It's not a command.");
     }
   },
 };
