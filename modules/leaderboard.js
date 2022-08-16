@@ -20,7 +20,6 @@ const cache = {
       // console.log(JSON.stringify(cache['leaderboard']));
     }
   },
-  async registerInvite() {},
 };
 
 module.exports = { cache };

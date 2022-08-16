@@ -19,6 +19,10 @@ function fetchAttachments(oldMessage) {
 module.exports = {
   name: 'messageUpdate',
   async execute(oldMessage, newMessage) {
+    if (oldMessage.author.bot) {
+      return;
+    }
+
     if (!serverConfig.cache[oldMessage.guildId]) {
       await serverConfig.cache.update(oldMessage.guildId, {});
     }
