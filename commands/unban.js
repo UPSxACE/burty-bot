@@ -15,7 +15,7 @@ module.exports = {
     ),
   async execute(interaction) {
     const id = interaction.options.get('target')?.value;
-    guild.members.unban(id);
+    interaction.guild.members.unban(id);
     interaction.reply('User was successfully unbanned!');
   },
 };
