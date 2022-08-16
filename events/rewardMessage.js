@@ -5,6 +5,9 @@ const messageRewardTimeout = [];
 module.exports = {
   name: 'messageCreate',
   async execute(message) {
+    if (message.author.bot) {
+      return;
+    }
     // const memberId = message.author.id;
 
     // fetch member data from database if not in cache yet (and create user profile if it doesn't exist too)

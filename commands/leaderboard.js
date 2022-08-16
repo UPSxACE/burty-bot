@@ -6,11 +6,11 @@ module.exports = {
     .setName('leaderboard')
     .setDescription('Shows the leaderboard ranking!'),
   async execute(interaction) {
-    leaderboard.cache.update();
+    await leaderboard.cache.update();
     await interaction.reply('Leaderboard updated!');
   },
   async executeManual(message, content) {
-    leaderboard.cache.update();
+    await leaderboard.cache.update();
     await message.reply('Leaderboard updated!');
   },
 };
