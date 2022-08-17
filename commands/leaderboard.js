@@ -38,7 +38,7 @@ async function generateLeaderboard(client) {
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('leaderboard')
-    .setDescription('Shows the leaderboard ranking!'),
+    .setDescription('Shows the leaderboard!'),
   async execute(interaction) {
     await leaderboard.cache.update();
     await interaction.reply({
