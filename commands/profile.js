@@ -47,17 +47,20 @@ module.exports = {
 async function effect(interaction, target, userArg) {
   let embed1 = {};
   let embed2 = {};
+  const prev = 'prev' + userArg.id;
+  console.log(prev);
+  const next = 'next' + userArg.id;
   const row = new ActionRowBuilder()
     .addComponents(
       new ButtonBuilder()
-        .setCustomId('prev')
+        .setCustomId(prev)
         .setLabel('Prev.')
         .setStyle(ButtonStyle.Primary)
         .setDisabled(true)
     )
     .addComponents(
       new ButtonBuilder()
-        .setCustomId('next')
+        .setCustomId(next)
         .setLabel('Next')
         .setStyle(ButtonStyle.Primary)
         .setDisabled(false)
@@ -383,8 +386,8 @@ async function effect(interaction, target, userArg) {
   const filter = (i) => {
     // console.log('entered filter');
     return (
-      (i.customId === 'next' && i.user.id === userArg.id) ||
-      (i.customId === 'prev' && i.user.id === userArg.id)
+      (i.customId === next && i.user.id === userArg.id) ||
+      (i.customId === prev && i.user.id === userArg.id)
     );
   };
   // const collector = interaction.channel.createMessageCollector({
@@ -394,7 +397,7 @@ async function effect(interaction, target, userArg) {
   });
 
   collectors[userArg.id].on('collect', async (i) => {
-    if (i.customId === 'next') {
+    if (i.customId === next) {
       row.components[1].setDisabled(true);
       row.components[0].setDisabled(false);
     } else {
@@ -402,7 +405,7 @@ async function effect(interaction, target, userArg) {
       row.components[1].setDisabled(false);
     }
     await i.update({
-      embeds: i.customId === 'next' ? [embed2] : [embed1],
+      embeds: i.customId === next ? [embed2] : [embed1],
       components: [row],
     });
   });
