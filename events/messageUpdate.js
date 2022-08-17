@@ -38,7 +38,7 @@ module.exports = {
             title: `Message edited at #${oldMessage.channel.name}`,
             description: `**Channel ID:** ${
               oldMessage.channelId
-            }\n**Before**: ${oldMessage}\n**After**: ${newMessage}\n${fetchAttachments(
+            }\n**Before**: ${oldMessage}\n**+After**: ${newMessage}\n${fetchAttachments(
               oldMessage
             )}`,
             url: newMessage.url,

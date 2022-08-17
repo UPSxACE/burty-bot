@@ -1,6 +1,40 @@
 const { SlashCommandBuilder } = require('discord.js');
 const profilesTracker = require('../modules/profilesTracker');
 
+// Breaking changes were made in this file. Tests are needed.
+
+async function effect(interaction, user, option, newValue) {
+  switch (option) {
+    case 'username':
+      if (
+        !profilesTracker.cache[user.id] ||
+        newValue != profilesTracker.cache[user.id].customUsername
+      ) {
+        await profilesTracker.cache.update(user.id, {
+          customUsername: newValue,
+        });
+      }
+      await interaction.reply('Custom profile username settings updated!');
+      break;
+    case 'aboutme':
+      if (
+        !profilesTracker.cache[user.id] ||
+        newValue != profilesTracker.cache[user.id].aboutMe
+      ) {
+        await profilesTracker.cache.update(user.id, {
+          aboutMe: newValue,
+        });
+      }
+      await interaction.reply('Profile about me message settings updated!');
+      break;
+    default:
+      console.log(
+        "Something went wrong. Switch statement ended on default on settings.js effect() function. Shouldn't happen"
+      );
+      break;
+  }
+}
+
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('settings')
@@ -39,30 +73,50 @@ module.exports = {
         break;
       case 'username':
         username = interaction.options.getString('newname');
-        if (
-          !profilesTracker.cache[interaction.user.id] ||
-          username.customUsername !=
-            profilesTracker.cache[interaction.user.id].customUsername
-        ) {
-          await profilesTracker.cache.update(interaction.user.id, {
-            customUsername: username,
-          });
-        }
-        await interaction.reply('Custom profile username settings updated!');
+        await effect(interaction, interaction.user, 'username', username);
         break;
       case 'aboutme':
         aboutme = interaction.options.getString('newmessage');
-        if (
-          !profilesTracker.cache[interaction.user.id] ||
-          aboutme != profilesTracker.cache[interaction.user.id].aboutMe
-        ) {
-          console.log(aboutme);
-          await profilesTracker.cache.update(interaction.user.id, {
-            aboutMe: aboutme,
-          });
-        }
-        await interaction.reply('Profile about me message settings updated!');
+        await effect(interaction, interaction.user, 'aboutme', aboutme);
         break;
     }
+  },
+  async executeManual(message, content, hasString) {
+    switch (content[1]) {
+      case 'username':
+        if (content[2]) {
+          await effect(message, message.author, 'username', content[2]);
+        } else {
+          console.log(
+            "Ace is lazy and didn't program a way of clearing the custom username yet. I'm sorry :')"
+          );
+          message.reply(
+            "Ace is lazy and didn't program a way of clearing the custom username yet. I'm sorry :')"
+          );
+        }
+
+        break;
+      case 'aboutme':
+        if (!hasString) {
+          await message.reply(
+            'You need to type a string in between two quotation marks(") if you want a custom about me message. Example: "Hello there"'
+          );
+          break;
+        }
+
+        await effect(message, message.author, 'aboutme', content[2]);
+        break;
+
+      default:
+        await message.reply('Select a valid settings option.');
+    }
+
+    /*
+    if (!hasString) {
+      message.reply(
+        'You need to type a string in between two quotation marks(").'
+      );
+    }
+    */
   },
 };

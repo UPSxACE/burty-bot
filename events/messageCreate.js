@@ -1,3 +1,59 @@
+function stringFinder(content) {
+  let found = 0;
+  let indexer = content.map((part, index) => {
+    if (found === 0) {
+      if (part[0] === '"') {
+        found = 1;
+        return index;
+      }
+    } else if (found === 1) {
+      if (part[part.length - 1] === '"') {
+        found = 2;
+        return index;
+      }
+    }
+  });
+
+  // clear empty values in array
+  indexer = indexer.filter((n) => n);
+  // console.log('indexer: ' + indexer);
+
+  let result = '';
+
+  content.forEach((part, index) => {
+    if (index === indexer[0]) {
+      // remove first char (")
+      result = part.slice(1);
+      // } else if (index > indexer[0] && index <= indexer[0]) {
+    } else if (index > indexer[0] && index < indexer[1]) {
+      // remove last char (")
+      result += ' ' + part;
+    } else if (index === indexer[1]) {
+      result += ' ' + part.slice(0, -1);
+    }
+  });
+
+  // console.log('result: ' + result);
+  if (!indexer[1]) {
+    // console.log('false');
+    return [content, false];
+  }
+  let finalArray = content.map((part, index) => {
+    if (index === indexer[0]) {
+      return result;
+    }
+    if (index < indexer[0] || index > indexer[1]) {
+      return part;
+    }
+  });
+
+  // clear empty values in array
+  finalArray = finalArray.filter((n) => n);
+  // console.log('final array: ' + finalArray);
+
+  return [finalArray, true];
+}
+
 module.exports = {
   name: 'messageCreate',
   execute(message) {
@@ -13,13 +69,17 @@ module.exports = {
     if (firstPartOfString === prefix) {
       // console.log("It's a command confirmed.");
 
-      const content = message.content.slice(prefix.length).split(' ');
+      // !help commands      ----> ['help', 'commands']
+      let content = message.content.slice(prefix.length).split(' ');
+      // console.log(content);
+      content = stringFinder(content);
+      // content: [contentArray, hasString?]
 
-      const command = message.client.commands.get(content[0]);
-      if (content[0] !== '') {
+      const command = message.client.commands.get(content[0][0]);
+      if (content[0][0] !== '') {
         if (command) {
           command.executeManual
-            ? command.executeManual(message, content)
+            ? command.executeManual(message, content[0], content[1])
             : message.reply(
                 'This command cannot be executed manually. Execute it with the slashcommands feature.'
               );
