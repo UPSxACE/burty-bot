@@ -29,4 +29,39 @@ module.exports = {
             .setRequired(true)
         )
     ),
+  async execute(interaction) {
+    let username = '';
+    let aboutme = '';
+    // const subcommand = await ;
+    switch (interaction.options.getSubcommand()) {
+      case 'list':
+        // ...
+        break;
+      case 'username':
+        username = interaction.options.getString('username');
+        if (
+          !profilesTracker.cache[interaction.user.id] ||
+          username.customUsername !=
+            profilesTracker.cache[interaction.user.id].customUsername
+        ) {
+          await profilesTracker.cache.update(interaction.user.id, {
+            customUsername: username,
+          });
+        }
+        await interaction.reply('Custom profile username settings updated!');
+        break;
+      case 'aboutme':
+        aboutme = interaction.options.String('aboutme');
+        if (
+          !profilesTracker.cache[interaction.user.id] ||
+          aboutme != profilesTracker.cache[interaction.user.id].aboutme
+        ) {
+          await profilesTracker.cache.update(interaction.user.id, {
+            aboutme: aboutme,
+          });
+        }
+        await interaction.reply('Profile about me message settings updated!');
+        break;
+    }
+  },
 };
