@@ -132,37 +132,6 @@ module.exports = {
         color: 16775935,
         fields: [
           {
-            name: `Level ${
-              profilesTracker.cache[target_user.id].level
-                ? profilesTracker.cache[target_user.id].level
-                : 1
-            }`,
-            value: `[${
-              profilesTracker.cache[target_user.id].currentXP
-                ? profilesTracker.cache[target_user.id].currentXP
-                : 0
-            } / ${
-              profilesTracker.cache[target_user.id].maxXP
-                ? profilesTracker.cache[target_user.id].maxXP
-                : 200
-            }]`,
-            inline: true,
-          },
-          {
-            name: '\u200B',
-            value: '\u200B',
-            inline: true,
-          },
-          {
-            name: 'Streak Points',
-            value: `${
-              profilesTracker.cache[target_user.id].streakLevel
-                ? profilesTracker.cache[target_user.id].streakLevel
-                : '0'
-            }`,
-            inline: true,
-          },
-          {
             name: 'Activity Points',
             value: `${
               profilesTracker.cache[target_user.id].activityPoints
@@ -193,6 +162,15 @@ module.exports = {
               ]
                 ? target_user_inviter.tag
                 : '\u200B'
+            }`,
+            inline: true,
+          },
+          {
+            name: 'About Me',
+            value: `${
+              profilesTracker.cache[target_user.id].aboutMe
+                ? profilesTracker.cache[target_user.id].aboutMe
+                : 'Hey!'
             }`,
             inline: true,
           },
@@ -236,7 +214,7 @@ module.exports = {
             ? profilesTracker.cache[interaction.user.id].customUsername
             : interaction.user.tag
         }`,
-        color: 15953368,
+        color: 16775935,
         fields: [
           {
             name: `Level ${
@@ -309,39 +287,8 @@ module.exports = {
             ? profilesTracker.cache[interaction.user.id].customUsername
             : interaction.user.tag
         }`,
-        color: 15953368,
+        color: 16775935,
         fields: [
-          {
-            name: `Level ${
-              profilesTracker.cache[interaction.user.id].level
-                ? profilesTracker.cache[interaction.user.id].level
-                : 1
-            }`,
-            value: `[${
-              profilesTracker.cache[interaction.user.id].currentXP
-                ? profilesTracker.cache[interaction.user.id].currentXP
-                : 0
-            } / ${
-              profilesTracker.cache[interaction.user.id].maxXP
-                ? profilesTracker.cache[interaction.user.id].maxXP
-                : 200
-            }]`,
-            inline: true,
-          },
-          {
-            name: '\u200B',
-            value: '\u200B',
-            inline: true,
-          },
-          {
-            name: 'Streak Points',
-            value: `${
-              profilesTracker.cache[interaction.user.id].streakLevel
-                ? profilesTracker.cache[interaction.user.id].streakLevel
-                : '0'
-            }`,
-            inline: true,
-          },
           {
             name: 'Activity Points',
             value: `${
@@ -357,21 +304,23 @@ module.exports = {
             inline: true,
           },
           {
-            name: `${
-              profilesTracker.cache[interaction.user.id].inviter &&
-              profilesTracker.cache[interaction.user.id].inviter[
-                interaction.guild.id
-              ]
-                ? 'Inviter'
-                : '\u200B'
-            }`,
+            name: 'Inviter',
             value: `${
               profilesTracker.cache[interaction.user.id].inviter &&
               profilesTracker.cache[interaction.user.id].inviter[
                 interaction.guild.id
               ]
                 ? user_inviter.tag
-                : '\u200B'
+                : 'None'
+            }`,
+            inline: true,
+          },
+          {
+            name: 'About Me',
+            value: `${
+              profilesTracker.cache[interaction.user.id].aboutMe
+                ? profilesTracker.cache[interaction.user.id].aboutMe
+                : 'Hey!'
             }`,
             inline: true,
           },

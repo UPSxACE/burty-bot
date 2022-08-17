@@ -13,7 +13,7 @@ module.exports = {
         )
         .addStringOption((option) =>
           option
-            .setName('username')
+            .setName('newname')
             .setDescription('The new username')
             .setRequired(true)
         )
@@ -24,7 +24,7 @@ module.exports = {
         .setDescription('Set the about me message in your profile card.')
         .addStringOption((option) =>
           option
-            .setName('aboutme')
+            .setName('newmessage')
             .setDescription('The new about me message')
             .setRequired(true)
         )
@@ -38,7 +38,7 @@ module.exports = {
         // ...
         break;
       case 'username':
-        username = interaction.options.getString('username');
+        username = interaction.options.getString('newname');
         if (
           !profilesTracker.cache[interaction.user.id] ||
           username.customUsername !=
@@ -51,13 +51,14 @@ module.exports = {
         await interaction.reply('Custom profile username settings updated!');
         break;
       case 'aboutme':
-        aboutme = interaction.options.String('aboutme');
+        aboutme = interaction.options.getString('newmessage');
         if (
           !profilesTracker.cache[interaction.user.id] ||
-          aboutme != profilesTracker.cache[interaction.user.id].aboutme
+          aboutme != profilesTracker.cache[interaction.user.id].aboutMe
         ) {
+          console.log(aboutme);
           await profilesTracker.cache.update(interaction.user.id, {
-            aboutme: aboutme,
+            aboutMe: aboutme,
           });
         }
         await interaction.reply('Profile about me message settings updated!');
