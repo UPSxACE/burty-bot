@@ -33,5 +33,14 @@ module.exports = {
         ],
       });
     }
+
+    if (serverConfig.cache[guildMember.guild.id].setwelcome) {
+      const target_channel = guildMember.guild.channels.cache.find(
+        (channelobject) =>
+          channelobject.id ===
+          serverConfig.cache[guildMember.guild.id].setwelcome
+      );
+      target_channel.send(`**Welcome <@${guildMember.id}>!**`);
+    }
   },
 };

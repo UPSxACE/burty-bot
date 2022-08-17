@@ -259,8 +259,8 @@ async function updateInviteMerge(serverId, inviterId, memberWhoJoinedId) {
   }
 
   cache[memberWhoJoinedId]['inviter'][serverId] = inviterId;
-  console.log('this: ' + JSON.stringify(cache[inviterId]['inviteCountGlobal']));
-  console.log('that: ' + JSON.stringify(cache[inviterId]['inviteCountServer']));
+  // console.log('this: ' + JSON.stringify(cache[inviterId]['inviteCountGlobal']));
+  // console.log('that: ' + JSON.stringify(cache[inviterId]['inviteCountServer']));
 
   await updateProfile(inviterId, {
     inviteCountGlobal: cache[inviterId]['inviteCountGlobal'],
