@@ -385,6 +385,11 @@ async function effect(interaction, target, userArg) {
   // const filter = (m) => m.content.includes('next');
   const filter = (i) => {
     // console.log('entered filter');
+    if (i.user.id !== userArg.id) {
+      i.reply(
+        `<@${i.user.id}> don't press someone's else buttons! That's rude! >:T`
+      );
+    }
     return (
       (i.customId === next && i.user.id === userArg.id) ||
       (i.customId === prev && i.user.id === userArg.id)
