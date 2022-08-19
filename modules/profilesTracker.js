@@ -110,7 +110,8 @@ async function daily(userId) {
         cache[userId].streakLevel
       );
     } else {
-      cache[userId].streakLevel = cache[userId].streakLevel - Math.trunc(div24);
+      cache[userId].streakLevel =
+        1 + cache[userId].streakLevel - Math.trunc(div24);
       if (cache[userId].streakLevel < 0) {
         cache[userId].streakLevel = 0;
       }

@@ -26,17 +26,21 @@ module.exports = {
     }
   },
   async executeManual(message, content, hasString) {
-    if (!content[1]) {
+    if (content[1]) {
       try {
-        await effect(message, null, message.author);
+        await effect(message, content[1], message.author);
       } catch (err) {
-        console.log('Error CODE 9000');
-        message.reply("Couldn't find such user :(");
+        try {
+          await effect(message, transformMention(content[1]), message.author);
+        } catch (err) {
+          console.log('Error CODE 9000');
+          message.reply("Couldn't find such user :(");
+        }
       }
     } else {
       try {
-        await effect(message, transformMention(content[1]), message.author);
-      } catch (err) {
+        await effect(message, null, message.author);
+      } catch {
         console.log('Error CODE 9001');
         message.reply("Couldn't find your profile :(");
       }
@@ -48,7 +52,7 @@ async function effect(interaction, target, userArg) {
   let embed1 = {};
   let embed2 = {};
   const prev = 'prev' + userArg.id;
-  console.log(prev);
+  // console.log(prev);
   const next = 'next' + userArg.id;
   const row = new ActionRowBuilder()
     .addComponents(
@@ -65,46 +69,51 @@ async function effect(interaction, target, userArg) {
         .setStyle(ButtonStyle.Primary)
         .setDisabled(false)
     );
+  console.log('HEREEEEE');
+  let target_user = null;
+  if (target) {
+    target_user = (await interaction.client.users.fetch(target)).id;
+  }
 
-  const target_user = target;
+  console.log('HEREE');
   let bot_message_id = null;
 
   if (target_user) {
     // In case it doesn't have a target, show the user's own profile
-    if (!profilesTracker.cache[target_user.id]) {
-      await profilesTracker.cache.update(target_user.id, {});
+    if (!profilesTracker.cache[target_user]) {
+      await profilesTracker.cache.update(target_user, {});
     }
 
-    const user = await interaction.client.users.fetch(target_user.id);
+    const user = await interaction.client.users.fetch(target_user);
     const target_user_inviter =
-      profilesTracker.cache[target_user.id].inviter &&
-      profilesTracker.cache[target_user.id].inviter[interaction.guild.id]
+      profilesTracker.cache[target_user].inviter &&
+      profilesTracker.cache[target_user].inviter[interaction.guild.id]
         ? await interaction.client.users.fetch(
-            profilesTracker.cache[target_user.id].inviter[interaction.guild.id]
+            profilesTracker.cache[target_user].inviter[interaction.guild.id]
           )
         : null;
 
     embed1 = {
       title: `${
-        profilesTracker.cache[target_user.id].customUsername
-          ? profilesTracker.cache[target_user.id].customUsername
-          : target_user.tag
+        profilesTracker.cache[target_user].customUsername
+          ? profilesTracker.cache[target_user].customUsername
+          : user.tag
       }`,
       color: 16775935,
       fields: [
         {
           name: `Level ${
-            profilesTracker.cache[target_user.id].level
-              ? profilesTracker.cache[target_user.id].level
+            profilesTracker.cache[target_user].level
+              ? profilesTracker.cache[target_user].level
               : 1
           }`,
           value: `[${
-            profilesTracker.cache[target_user.id].currentXP
-              ? profilesTracker.cache[target_user.id].currentXP
+            profilesTracker.cache[target_user].currentXP
+              ? profilesTracker.cache[target_user].currentXP
               : 0
           } / ${
-            profilesTracker.cache[target_user.id].maxXP
-              ? profilesTracker.cache[target_user.id].maxXP
+            profilesTracker.cache[target_user].maxXP
+              ? profilesTracker.cache[target_user].maxXP
               : 200
           }]`,
           inline: true,
@@ -117,8 +126,8 @@ async function effect(interaction, target, userArg) {
         {
           name: 'Title',
           value: `${
-            profilesTracker.cache[target_user.id].currentTitle
-              ? profilesTracker.cache[target_user.id].currentTitle
+            profilesTracker.cache[target_user].currentTitle
+              ? profilesTracker.cache[target_user].currentTitle
               : 'Alpha Tester'
           }`,
           inline: true,
@@ -126,8 +135,8 @@ async function effect(interaction, target, userArg) {
         {
           name: 'Members Invited',
           value: `${
-            profilesTracker.cache[target_user.id].inviteCountGlobal
-              ? profilesTracker.cache[target_user.id].inviteCountGlobal
+            profilesTracker.cache[target_user].inviteCountGlobal
+              ? profilesTracker.cache[target_user].inviteCountGlobal
               : '0'
           }`,
           inline: true,
@@ -140,8 +149,8 @@ async function effect(interaction, target, userArg) {
         {
           name: 'Coins',
           value: `${
-            profilesTracker.cache[target_user.id].coins
-              ? profilesTracker.cache[target_user.id].coins
+            profilesTracker.cache[target_user].coins
+              ? profilesTracker.cache[target_user].coins
               : 0
           }`,
           inline: true,
@@ -159,17 +168,17 @@ async function effect(interaction, target, userArg) {
     };
     embed2 = {
       title: `${
-        profilesTracker.cache[target_user.id].customUsername
-          ? profilesTracker.cache[target_user.id].customUsername
-          : target_user.tag
+        profilesTracker.cache[target_user].customUsername
+          ? profilesTracker.cache[target_user].customUsername
+          : user.tag
       }`,
       color: 16775935,
       fields: [
         {
           name: 'Activity Points',
           value: `${
-            profilesTracker.cache[target_user.id].activityPoints
-              ? profilesTracker.cache[target_user.id].activityPoints
+            profilesTracker.cache[target_user].activityPoints
+              ? profilesTracker.cache[target_user].activityPoints
               : '0'
           }`,
           inline: true,
@@ -182,14 +191,14 @@ async function effect(interaction, target, userArg) {
 
         {
           name: `${
-            profilesTracker.cache[target_user.id].inviter &&
-            profilesTracker.cache[target_user.id].inviter[interaction.guild.id]
+            profilesTracker.cache[target_user].inviter &&
+            profilesTracker.cache[target_user].inviter[interaction.guild.id]
               ? 'Inviter'
               : '\u200B'
           }`,
           value: `${
-            profilesTracker.cache[target_user.id].inviter &&
-            profilesTracker.cache[target_user.id].inviter[interaction.guild.id]
+            profilesTracker.cache[target_user].inviter &&
+            profilesTracker.cache[target_user].inviter[interaction.guild.id]
               ? target_user_inviter.tag
               : '\u200B'
           }`,
@@ -198,8 +207,8 @@ async function effect(interaction, target, userArg) {
         {
           name: 'About Me',
           value: `${
-            profilesTracker.cache[target_user.id].aboutMe
-              ? profilesTracker.cache[target_user.id].aboutMe
+            profilesTracker.cache[target_user].aboutMe
+              ? profilesTracker.cache[target_user].aboutMe
               : 'Hey!'
           }`,
           inline: true,
