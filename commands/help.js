@@ -1,6 +1,6 @@
 const { SlashCommandBuilder } = require('discord.js');
 
-const { prefix } = require('../config.json');
+const { prefix, version } = require('../config.json');
 
 const commands = [
   [
@@ -30,7 +30,7 @@ const embed = {
     }),
   ],
   footer: {
-    text: 'v1.1.0-alpha',
+    text: `${version}`,
   },
 };
 module.exports = {
