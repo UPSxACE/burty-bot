@@ -5,6 +5,32 @@ const {
   ButtonStyle,
 } = require('discord.js');
 const { version, prefix } = require('../config.json');
+const usersMatch = require('../modules/usersMatch');
+const usersPlaying = require('../modules/usersPlaying');
+
+let currentRoundPlayer = null;
+let matchEndBool = false;
+let bot_message_id = null;
+
+// test variable
+let winner = null;
+
+// return matchEndBool
+function draw(matchHostId) {
+  return false;
+}
+
+// return matchEndBool
+function lose(matchHostId) {
+  winner = 2;
+  return true;
+}
+
+// return matchEndBool
+function win(matchHostId) {
+  winner = 1;
+  return true;
+}
 
 const embedHelp = {
   title: 'Rock Paper Scissors',
@@ -52,6 +78,156 @@ const embedRps = (player1, player2, score1, score2) => {
   };
 };
 
+const buildCollector = (player1Obj, player2Obj, interaction) => {
+  const collectors = require('../modules/userCollectors');
+
+  if (collectors[player1Obj.id]) {
+    // console.log('Another collector exists');
+    collectors[player1Obj.id].stop();
+  }
+
+  // `m` is a message object that will be passed through the filter function
+  // const filter = (m) => m.content.includes('next');
+  const filter = (i) => {
+    // console.log('entered filter');
+    if (i.user.id !== player1Obj.id) {
+      if (!player2Obj || (player2Obj && i.user.id !== player2Obj.id)) {
+        i.reply(
+          `<@${i.user.id}> don't press someone's else buttons! That's rude! >:T`
+        );
+      }
+    } else if (i.user.id !== currentRoundPlayer) {
+      i.reply(`<@${i.user.id}> it's not your turn!`);
+    }
+    console.log(
+      i.user.id === currentRoundPlayer &&
+        i.customId !== 'rock' + player1Obj.id &&
+        i.customId !== 'paper' + player1Obj.id &&
+        i.customId !== 'scissors' + player1Obj.id
+    );
+    return (
+      i.user.id === currentRoundPlayer &&
+      (i.customId === 'rock' + player1Obj.id ||
+        i.customId === 'paper' + player1Obj.id ||
+        i.customId === 'scissors' + player1Obj.id)
+    );
+  };
+  // const collector = interaction.channel.createMessageCollector({
+  collectors[player1Obj.id] =
+    interaction.channel.createMessageComponentCollector({
+      filter,
+      time: 1200000,
+      // 20 minutes
+    });
+
+  if (!player2Obj) {
+    collectors[player1Obj.id].on('collect', async (i) => {
+      const randomComputerPlay = Math.floor(Math.random() * 3);
+      if (i.customId === 'rock' + player1Obj.id) {
+        switch (randomComputerPlay) {
+          case 0:
+            matchEndBool = await draw(player1Obj.id);
+            console.log(matchEndBool);
+            break;
+          case 1:
+            matchEndBool = await lose(player1Obj.id);
+            console.log(matchEndBool);
+            break;
+          case 2:
+            matchEndBool = await win(player1Obj.id);
+            console.log(matchEndBool);
+            break;
+          default:
+            console.log('Error CODE 9004');
+        }
+      }
+      if (i.customId === 'paper' + player1Obj.id) {
+        switch (randomComputerPlay) {
+          case 0:
+            matchEndBool = await win(player1Obj.id);
+            console.log(matchEndBool);
+            break;
+          case 1:
+            matchEndBool = await draw(player1Obj.id);
+            console.log(matchEndBool);
+            break;
+          case 2:
+            matchEndBool = await lose(player1Obj.id);
+            console.log(matchEndBool);
+            break;
+          default:
+            console.log('Error CODE 9004');
+        }
+      }
+      if (i.customId === 'scissors' + player1Obj.id) {
+        switch (randomComputerPlay) {
+          case 0:
+            matchEndBool = await lose(player1Obj.id);
+            console.log(matchEndBool);
+            break;
+          case 1:
+            matchEndBool = await win(player1Obj.id);
+            console.log(matchEndBool);
+            break;
+          case 2:
+            matchEndBool = await draw(player1Obj.id);
+            console.log(matchEndBool);
+            break;
+          default:
+            console.log('Error CODE 9004');
+        }
+      }
+
+      if (matchEndBool) {
+        // await i.update({ content: `We have a winner! Player ${winner}!` });
+        await i.deferUpdate();
+        await collectors[player1Obj.id].stop();
+        usersPlaying[player1Obj.id] = null;
+        if (player2Obj) {
+          usersPlaying[player2Obj.id] = null;
+        }
+        usersMatch[player1Obj.id] = null;
+        await i.channel.send(`We have a winner! Player ${winner}!`);
+        // await i.channel.send('The match has finished!');
+      } else {
+        await i.channel.send('It was a draw! One more turn!!!');
+        // await i.update({ content: 'It was a draw! One more turn!!!' });
+        await i.deferUpdate();
+        // await i.channel.send('The match has finished!');
+      }
+    });
+  }
+
+  // collectors[player1Obj.id].on('collect', async (i) => {
+  /*
+    if (i.customId === next) {
+      row.components[1].setDisabled(true);
+      row.components[0].setDisabled(false);
+    } else {
+      row.components[0].setDisabled(true);
+      row.components[1].setDisabled(false);
+    }
+    await i.update({
+      embeds: i.customId === next ? [embed2] : [embed1],
+      components: [row],
+    });
+    */
+  // });
+
+  collectors[player1Obj.id].on('end', async (collected) => {
+    if (interaction.type === 0) {
+      await (
+        await interaction.channel.messages.fetch(bot_message_id)
+      ).edit({
+        components: [],
+      });
+    } else {
+      await interaction.editReply({ components: [] });
+    }
+    // console.log(`Collected ${collected.size} items`);
+  });
+};
+
 const row = (player1id) => {
   return new ActionRowBuilder()
     .addComponents(
@@ -77,15 +253,40 @@ const row = (player1id) => {
     );
 };
 
-async function effect(mode, repliableObj, userObj) {
+async function effect(mode, repliableObj, userObj, userObj2) {
   if (mode) {
     switch (mode) {
       case 'ai':
-        await repliableObj.reply({
-          content: 'So you dare challenging me? HA!',
-          embeds: [embedRps(userObj, repliableObj.client.user)],
-          components: [row(userObj.id)],
-        });
+        if (!usersPlaying[userObj.id]) {
+          usersPlaying[userObj.id] = {
+            matchHost: userObj.id,
+          };
+          usersMatch[userObj.id] = {
+            // "game === 0" -> rock paper scissors
+            game: 0,
+            bo3: false,
+            score1: 0,
+            score2: 0,
+            player1: userObj.id,
+            player2: null,
+            failMessage:
+              "You're already participating in a 'Rock Paper Scissors match!'",
+          };
+          currentRoundPlayer = userObj.id;
+          // As long as "repliableObj" is always a message object or an interaction object this line below will work
+          buildCollector(userObj, null, repliableObj);
+          bot_message_id = await repliableObj.reply({
+            content: 'So you dare challenging me? HA!',
+            embeds: [embedRps(userObj, repliableObj.client.user)],
+            components: [row(userObj.id)],
+          });
+        } else {
+          // to be programmed yet
+          await repliableObj.reply(
+            usersMatch[usersPlaying[userObj.id].matchHost].failMessage
+          );
+        }
+
         break;
       case 'pvp':
         break;
@@ -125,12 +326,12 @@ module.exports = {
   async executeManual(message, content) {
     switch (content[1]) {
       case 'start':
-        await effect('ai', message, message.author);
+        await effect('ai', message, message.author, null);
         break;
       case 'challenge':
         break;
       default:
-        await effect(null, message, message.author);
+        await effect(null, message, message.author, null);
     }
   },
 };
