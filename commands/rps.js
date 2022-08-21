@@ -15,6 +15,10 @@ let bot_message_id = null;
 // test variable
 let winner = null;
 
+function transformMention(mention) {
+  return mention.slice(2, -1);
+}
+
 // return matchEndBool
 function draw(matchHostId) {
   return false;
@@ -299,6 +303,8 @@ async function effect(mode, repliableObj, userObj, userObj2) {
   }
 }
 
+function challenge() {}
+
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('rps')
@@ -329,6 +335,26 @@ module.exports = {
         await effect('ai', message, message.author, null);
         break;
       case 'challenge':
+        if (content[1]) {
+          try {
+            await challenge(0, message, effect);
+          } catch (err) {
+            try {
+              await challenge(0, message, effect);
+            } catch (err) {
+              console.log('Error CODE 9005');
+              message.reply("Couldn't find such user :(");
+            }
+          }
+        } else {
+          try {
+            await challenge(0, message, effect);
+          } catch {
+            console.log('Error CODE 9006');
+            message.reply("Couldn't find your profile :(");
+          }
+        }
+        await challenge(0, message, effect);
         break;
       default:
         await effect(null, message, message.author, null);
