@@ -17,9 +17,9 @@ module.exports = {
       content: null,
       embeds: [
         {
-          title: `${
-            interaction.member.nickname
-          } slapped ${interaction.options.getUser('target')} !`,
+          title: `${await interaction.member} slapped ${await interaction.options.getUser(
+            'target',
+          )} !`,
           color: null,
           image: {
             url: await gifapi(term),
