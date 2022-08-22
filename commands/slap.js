@@ -29,4 +29,24 @@ module.exports = {
       attachments: [],
     })
   },
+  async executeManual(message, content) {
+    if (content[1]) {
+      const term = 'anime slap'
+      await interaction.reply({
+        content: null,
+        embeds: [
+          {
+            title: `${await interaction.member.user.username} slapped ${
+              content[1]
+            } !`,
+            color: null,
+            image: {
+              url: await gifapi(term),
+            },
+          },
+        ],
+        attachments: [],
+      })
+    }
+  },
 }
