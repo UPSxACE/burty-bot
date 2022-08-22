@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
+const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js')
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -8,14 +8,19 @@ module.exports = {
       option
         .setName('target')
         .setDescription('The member to ban.')
-        .setRequired(true)
+        .setRequired(true),
     )
     .setDefaultMemberPermissions(
-      PermissionFlagsBits.KickMembers | PermissionFlagsBits.BanMembers
+      PermissionFlagsBits.KickMembers | PermissionFlagsBits.BanMembers,
     ),
   async execute(interaction) {
-    const user = interaction.options.getUser('target');
-    interaction.guild.members.ban(user);
-    interaction.reply('User was successfully banned!');
+    try {
+      const user = interaction.options.getUser('target')
+      await interaction.guild.members.ban(user)
+      await interaction.reply('User was successfully banned!')
+    } catch (err) {
+      console.log('ERROR CODE M101')
+      await interaction.reply('Could not execute command :(')
+    }
   },
-};
+}

@@ -1,6 +1,6 @@
-const profilesSchema = require('../schema/profiles-schema');
+const profilesSchema = require('../schema/profiles-schema')
 
-let timeout = null;
+let timeout = null
 
 const cache = {
   async update() {
@@ -8,11 +8,11 @@ const cache = {
       // console.log('Leaderboard updated');
       cache['leaderboard'] = await profilesSchema.find().sort({
         activityPoints: 'desc',
-      });
+      })
 
       timeout = setTimeout(() => {
-        timeout = null;
-      }, 6000);
+        timeout = null
+      }, 6000)
 
       // console.log(JSON.stringify(cache['leaderboard']));
     } else {
@@ -20,6 +20,6 @@ const cache = {
       // console.log(JSON.stringify(cache['leaderboard']));
     }
   },
-};
+}
 
-module.exports = { cache };
+module.exports = { cache }

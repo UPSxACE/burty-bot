@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
+const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js')
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -8,14 +8,19 @@ module.exports = {
       option
         .setName('target')
         .setDescription('The member to unban.')
-        .setRequired(true)
+        .setRequired(true),
     )
     .setDefaultMemberPermissions(
-      PermissionFlagsBits.KickMembers | PermissionFlagsBits.BanMembers
+      PermissionFlagsBits.KickMembers | PermissionFlagsBits.BanMembers,
     ),
   async execute(interaction) {
-    const id = interaction.options.get('target')?.value;
-    interaction.guild.members.unban(id);
-    interaction.reply('User was successfully unbanned!');
+    try {
+      const id = interaction.options.get('target')?.value
+      await interaction.guild.members.unban(id)
+      await interaction.reply('User was successfully unbanned!')
+    } catch (err) {
+      console.log('ERROR CODE M102')
+      await interaction.reply('Could not execute command :(')
+    }
   },
-};
+}
