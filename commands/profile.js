@@ -28,10 +28,10 @@ module.exports = {
   async executeManual(message, content, hasString) {
     if (content[1]) {
       try {
-        await effect(message, content[1], message.author);
+        await effect(message, transformMention(content[1]), message.author);
       } catch (err) {
         try {
-          await effect(message, transformMention(content[1]), message.author);
+          await effect(message, content[1], message.author);
         } catch (err) {
           console.log('Error CODE 9000');
           message.reply("Couldn't find such user :(");
