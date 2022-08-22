@@ -1,18 +1,25 @@
-const { SlashCommandBuilder } = require('discord.js');
-const gifapi = require('../modules/gifAPI.js');
+const { SlashCommandBuilder } = require('discord.js')
+const gifapi = require('../modules/gifAPI.js')
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('slap')
-    .setDescription('Slaps a user'),
-
+    .setDescription('Slaps a user.')
+    .addUserOption((option) =>
+      option
+        .setName('target')
+        .setDescription('Select a member to slap')
+        .setRequired(true),
+    ),
   async execute(interaction) {
-    const term = 'anime slap';
+    const term = 'anime slap'
     await interaction.reply({
       content: null,
       embeds: [
         {
-          title: '${user} slapped ${user2} !',
+          title: `${
+            interaction.member.nickname
+          } slapped ${interaction.options.getUser('target')} !`,
           color: null,
           image: {
             url: await gifapi(term),
@@ -20,6 +27,6 @@ module.exports = {
         },
       ],
       attachments: [],
-    });
+    })
   },
-};
+}
