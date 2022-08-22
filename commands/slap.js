@@ -1,5 +1,5 @@
-const { SlashCommandBuilder } = require('discord.js')
-const gifapi = require('../modules/gifAPI.js')
+const { SlashCommandBuilder } = require('discord.js');
+const gifapi = require('../modules/gifAPI.js');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -7,7 +7,7 @@ module.exports = {
     .setDescription('Slaps a user'),
 
   async execute(interaction) {
-    const term = 'slap'
+    const term = 'anime slap';
     await interaction.reply({
       content: null,
       embeds: [
@@ -15,11 +15,11 @@ module.exports = {
           title: '${user} slapped ${user2} !',
           color: null,
           image: {
-            url: gifapi(term),
+            url: await gifapi(term),
           },
         },
       ],
       attachments: [],
-    })
+    });
   },
-}
+};
