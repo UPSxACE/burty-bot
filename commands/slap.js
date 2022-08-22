@@ -33,24 +33,44 @@ module.exports = {
   },
   async executeManual(message, content) {
     try {
-      if (content[1]) {
-        const targetuser = await message.client.users.fetch(
-          transformMention(content[1]),
-        )
-        const term = 'anime slap'
-        await message.reply({
-          content: null,
-          embeds: [
-            {
-              title: `${message.author.username} slapped ${targetuser.username} !`,
-              color: null,
-              image: {
-                url: await gifapi(term),
+      try {
+        if (content[1]) {
+          const targetuser = await message.client.users.fetch(
+            transformMention(content[1]),
+          )
+          const term = 'anime slap'
+          await message.reply({
+            content: null,
+            embeds: [
+              {
+                title: `${message.author.username} slapped ${targetuser.username} !`,
+                color: null,
+                image: {
+                  url: await gifapi(term),
+                },
               },
-            },
-          ],
-          attachments: [],
-        })
+            ],
+            attachments: [],
+          })
+        }
+      } catch (err) {
+        if (content[1]) {
+          const targetuser = await message.client.users.fetch(content[1])
+          const term = 'anime slap'
+          await message.reply({
+            content: null,
+            embeds: [
+              {
+                title: `${message.author.username} slapped ${targetuser.username} !`,
+                color: null,
+                image: {
+                  url: await gifapi(term),
+                },
+              },
+            ],
+            attachments: [],
+          })
+        }
       }
     } catch (err) {
       console.log('ERROR CODE F100')
