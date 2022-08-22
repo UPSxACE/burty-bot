@@ -32,7 +32,7 @@ module.exports = {
   async executeManual(message, content) {
     if (content[1]) {
       const term = 'anime slap'
-      await interaction.reply({
+      await message.reply({
         content: null,
         embeds: [
           {
