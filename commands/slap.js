@@ -36,9 +36,7 @@ module.exports = {
         content: null,
         embeds: [
           {
-            title: `${await interaction.member.user.username} slapped ${
-              content[1]
-            } !`,
+            title: `${message.author.username} slapped ${content[1]} !`,
             color: null,
             image: {
               url: await gifapi(term),
