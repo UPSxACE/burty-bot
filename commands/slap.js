@@ -1,6 +1,8 @@
 const { SlashCommandBuilder } = require('discord.js')
 const gifapi = require('../modules/gifAPI.js')
-
+function transformMention(mention) {
+  return mention.slice(2, -1)
+}
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('slap')
@@ -30,21 +32,29 @@ module.exports = {
     })
   },
   async executeManual(message, content) {
-    if (content[1]) {
-      const term = 'anime slap'
-      await message.reply({
-        content: null,
-        embeds: [
-          {
-            title: `${message.author.username} slapped ${content[1]} !`,
-            color: null,
-            image: {
-              url: await gifapi(term),
+    try {
+      if (content[1]) {
+        const targetuser = await message.client.users.fetch(
+          transformMention(content[1]),
+        )
+        const term = 'anime slap'
+        await message.reply({
+          content: null,
+          embeds: [
+            {
+              title: `${message.author.username} slapped ${targetuser.username} !`,
+              color: null,
+              image: {
+                url: await gifapi(term),
+              },
             },
-          },
-        ],
-        attachments: [],
-      })
+          ],
+          attachments: [],
+        })
+      }
+    } catch (err) {
+      console.log('ERROR CODE F100')
+      message.reply('User not found :(')
     }
   },
 }
