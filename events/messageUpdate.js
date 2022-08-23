@@ -50,7 +50,9 @@ module.exports = {
             footer: {
               text: `User ID: ${oldMessage.author.id}`,
             },
-            timestamp: newMessage.editedAt.toISOString(),
+            timestamp: newMessage.editedAt
+              ? newMessage.editedAt.toISOString()
+              : '',
           },
         ],
       });
