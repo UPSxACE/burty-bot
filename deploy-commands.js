@@ -23,6 +23,14 @@ for (const file of commandFiles) {
 
 const rest = new REST({ version: '10' }).setToken(DISCORD_TOKEN);
 
+// delete guild-based commands
+rest
+  .put(Routes.applicationGuildCommands(CLIENT_ID, process.env.SERVER_ID), {
+    body: [],
+  })
+  .then(() => console.log('Successfully deleted all guild commands.'))
+  .catch(console.error);
+
 // delete old
 rest
   .put(Routes.applicationCommands(CLIENT_ID), { body: [] })
