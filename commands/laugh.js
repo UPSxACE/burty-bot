@@ -18,4 +18,22 @@ module.exports = {
       attachments: [],
     })
   },
+  async executeManual(message, content) {
+    if (content[0]) {
+      const term = 'anime laugh'
+      await message.reply({
+        content: null,
+        embeds: [
+          {
+            title: `${message.author.username} Laughed!`,
+            color: null,
+            image: {
+              url: await gifapi(term),
+            },
+          },
+        ],
+        attachments: [],
+      })
+    }
+  },
 }
