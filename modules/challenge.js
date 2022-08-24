@@ -83,7 +83,16 @@ const buildCollector = (
       });
     } else {
       //this one still not coded & prevent invite himself
-      await interaction.editReply({ components: [] });
+      await interaction.editReply({
+        embeds: [
+          {
+            title: 'Offer declined or expired!',
+            description:
+              "Try looking for someone else, because that one doesn't have the guts needed >:)",
+          },
+        ],
+        components: [],
+      });
     }
     // console.log(`Collected ${collected.size} items`);
 
@@ -100,37 +109,42 @@ async function generateInvite(
   const challengedPerson = await repliableObj.client.users.fetch(
     challengedPersonId
   );
-  let user = null;
-  if (repliableObj.type === 0) {
-    user = repliableObj.author.id;
-  } else {
-    user = repliableObj.user.id;
-  }
 
-  if (collectors[challengedPersonId] || usersPlaying[challengedPersonId]) {
-    repliableObj.reply('That user is currently not available for a match!');
-  } else if (collectors[user] || usersPlaying[user]) {
-    if (
-      usersMatch[challengedPersonId] &&
-      usersMatch[challengedPersonId].failMessage
-    ) {
-      repliableObj.reply(usersMatch[challengedPersonId].failMessage);
+  if (challengedPerson.bot) {
+    repliableObj.reply("You can't challenge a bot!");
+  } else {
+    let user = null;
+    if (repliableObj.type === 0) {
+      user = repliableObj.author.id;
     } else {
-      repliableObj.reply('You are currently not available for a match!');
+      user = repliableObj.user.id;
     }
-  } else {
-    bot_message_id = await repliableObj.reply({
-      // content: `<@${user}> invited you, <@${challengedPerson.id}>, for a ${gameName} match!`,
-      embeds: [
-        {
-          title: `${gameName} challenge!`,
-          description: `<@${user}> invited you, <@${challengedPerson.id}>, for a ${gameName} match!`,
-        },
-      ],
-      components: [challengeAnswerRow(challengedPersonId)],
-    });
 
-    buildCollector(challengedPersonId, repliableObj, user, effect);
+    if (collectors[challengedPersonId] || usersPlaying[challengedPersonId]) {
+      repliableObj.reply('That user is currently not available for a match!');
+    } else if (collectors[user] || usersPlaying[user]) {
+      if (
+        usersMatch[challengedPersonId] &&
+        usersMatch[challengedPersonId].failMessage
+      ) {
+        repliableObj.reply(usersMatch[challengedPersonId].failMessage);
+      } else {
+        repliableObj.reply('You are currently not available for a match!');
+      }
+    } else {
+      bot_message_id = await repliableObj.reply({
+        // content: `<@${user}> invited you, <@${challengedPerson.id}>, for a ${gameName} match!`,
+        embeds: [
+          {
+            title: `${gameName} challenge!`,
+            description: `<@${user}> invited you, <@${challengedPerson.id}>, for a ${gameName} match!`,
+          },
+        ],
+        components: [challengeAnswerRow(challengedPersonId)],
+      });
+
+      buildCollector(challengedPersonId, repliableObj, user, effect);
+    }
   }
 }
 
@@ -140,17 +154,28 @@ module.exports = async (
   challengedPersonId,
   effectFunction
 ) => {
-  switch (gameId) {
-    case 0:
-      await generateInvite(
-        repliableObj,
-        'Rock Paper Scissors',
-        challengedPersonId,
-        effectFunction
-      );
-      break;
-    default:
-      console.log('Error CODE 9008');
-      break;
+  let userId = null;
+  if (repliableObj.type === 0) {
+    userId = repliableObj.author.id;
+  } else {
+    userId = repliableObj.user.id;
+  }
+
+  if (userId === challengedPersonId) {
+    repliableObj.reply("You can't challenge yourself!");
+  } else {
+    switch (gameId) {
+      case 0:
+        await generateInvite(
+          repliableObj,
+          'Rock Paper Scissors',
+          challengedPersonId,
+          effectFunction
+        );
+        break;
+      default:
+        console.log('Error CODE 9008');
+        break;
+    }
   }
 };
