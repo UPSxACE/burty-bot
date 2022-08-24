@@ -26,7 +26,8 @@ const buildCollector = (
   challengedPersonId,
   interaction,
   challengerId,
-  effect
+  effect,
+  challengedPersonObj
 ) => {
   let userObj = null;
   if (interaction.type === 0) {
@@ -55,19 +56,23 @@ const buildCollector = (
     interaction.channel.createMessageComponentCollector({
       filter,
       time: 30000,
-      // 30 segundos
+      // 30 seconds
     });
 
   collectors[challengerId].on('collect', async (i) => {
-    const randomComputerPlay = Math.floor(Math.random() * 3);
     if (i.customId === 'accept' + challengedPersonId) {
-      await effect('ai', interaction, userObj, null);
+      // changes are here
+      await collectors[challengerId].stop();
+      collectors[challengerId] = null;
+      await effect('pvp', interaction, userObj, challengedPersonObj);
+      console.log('after effect');
     } else if (i.customId === 'decline' + challengedPersonId) {
       i.reply('Challenge declined!');
     }
   });
 
   collectors[challengerId].on('end', async (collected) => {
+    console.log('right one end called');
     if (interaction.type === 0) {
       await (
         await interaction.channel.messages.fetch(bot_message_id)
@@ -93,10 +98,11 @@ const buildCollector = (
         ],
         components: [],
       });
+
+      // collectors[challengerId].stop();
+      // collectors[challengerId] = null;
     }
     // console.log(`Collected ${collected.size} items`);
-
-    collectors[challengerId] = null;
   });
 };
 
@@ -129,6 +135,7 @@ async function generateInvite(
       ) {
         repliableObj.reply(usersMatch[challengedPersonId].failMessage);
       } else {
+        console.log('collector: ' + collectors[user]);
         repliableObj.reply('You are currently not available for a match!');
       }
     } else {
@@ -143,7 +150,13 @@ async function generateInvite(
         components: [challengeAnswerRow(challengedPersonId)],
       });
 
-      buildCollector(challengedPersonId, repliableObj, user, effect);
+      buildCollector(
+        challengedPersonId,
+        repliableObj,
+        user,
+        effect,
+        challengedPerson
+      );
     }
   }
 }
