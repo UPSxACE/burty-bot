@@ -68,30 +68,94 @@ const buildCollector = (
       console.log('after effect');
     } else if (i.customId === 'decline' + challengedPersonId) {
       i.reply('Challenge declined!');
+      await collectors[challengerId].stop();
+      collectors[challengerId] = null;
     }
   });
 
   collectors[challengerId].on('end', async (collected) => {
     console.log('right one end called');
-    if (interaction.type === 0) {
+    const last = collected.last();
+    if (last && last.customId === 'accept' + challengedPersonId) {
+      if (interaction.type === 0) {
+        await (
+          await interaction.channel.messages.fetch(bot_message_id)
+        ).edit({
+          embeds: [
+            {
+              title: 'Offer accepted!',
+              description:
+                'Ready or not, here we go. Your battle will be legendary!',
+            },
+          ],
+          components: [],
+        });
+      } else {
+        // this one still not coded & prevent invite himself
+        await interaction.editReply({
+          embeds: [
+            {
+              title: 'Offer accepted!',
+              description:
+                'Ready or not, here we go. Your battle will be legendary!',
+            },
+          ],
+          components: [],
+        });
+
+        // collectors[challengerId].stop();
+        // collectors[challengerId] = null;
+      }
+    } else if (last && last.customId === 'decline' + challengedPersonId) {
+      if (interaction.type === 0) {
+        await (
+          await interaction.channel.messages.fetch(bot_message_id)
+        ).edit({
+          embeds: [
+            {
+              title: 'Offer declined!',
+              description:
+                "Try looking for someone else, because that one doesn't have the guts needed >:)",
+            },
+          ],
+          components: [],
+        });
+      } else {
+        // this one still not coded & prevent invite himself
+        await interaction.editReply({
+          embeds: [
+            {
+              title: 'Offer declined!',
+              description:
+                "Try looking for someone else, because that one doesn't have the guts needed >:)",
+            },
+          ],
+          components: [],
+        });
+
+        // collectors[challengerId].stop();
+        // collectors[challengerId] = null;
+      }
+    } else if (interaction.type === 0) {
       await (
         await interaction.channel.messages.fetch(bot_message_id)
       ).edit({
         embeds: [
           {
-            title: 'Offer declined or expired!',
+            title: 'Offer expired!',
             description:
               "Try looking for someone else, because that one doesn't have the guts needed >:)",
           },
         ],
         components: [],
       });
+      collectors[challengerId] = null;
     } else {
-      //this one still not coded & prevent invite himself
+      // this one still not coded & prevent invite himself
       await interaction.editReply({
         embeds: [
           {
-            title: 'Offer declined or expired!',
+            title: 'Offer expired!',
             description:
               "Try looking for someone else, because that one doesn't have the guts needed >:)",
           },
@@ -102,7 +166,6 @@ const buildCollector = (
       // collectors[challengerId].stop();
       // collectors[challengerId] = null;
     }
-    // console.log(`Collected ${collected.size} items`);
   });
 };
 
@@ -139,16 +202,18 @@ async function generateInvite(
         repliableObj.reply('You are currently not available for a match!');
       }
     } else {
-      bot_message_id = await repliableObj.reply({
-        // content: `<@${user}> invited you, <@${challengedPerson.id}>, for a ${gameName} match!`,
-        embeds: [
-          {
-            title: `${gameName} challenge!`,
-            description: `<@${user}> invited you, <@${challengedPerson.id}>, for a ${gameName} match!`,
-          },
-        ],
-        components: [challengeAnswerRow(challengedPersonId)],
-      });
+      bot_message_id = (
+        await repliableObj.reply({
+          // content: `<@${user}> invited you, <@${challengedPerson.id}>, for a ${gameName} match!`,
+          embeds: [
+            {
+              title: `${gameName} challenge!`,
+              description: `<@${user}> invited you, <@${challengedPerson.id}>, for a ${gameName} match!`,
+            },
+          ],
+          components: [challengeAnswerRow(challengedPersonId)],
+        })
+      ).id;
 
       buildCollector(
         challengedPersonId,

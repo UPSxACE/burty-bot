@@ -73,11 +73,13 @@ class RpsMatch {
             this.currentRoundPlayer = userObj.id;
             // As long as "repliableObj" is always a message object or an interaction object this line below will work
             this.buildCollector(userObj, null, repliableObj);
-            this.bot_message_id = await repliableObj.reply({
-              content: 'So you dare challenging me? HA!',
-              embeds: [this.embedRps(userObj, repliableObj.client.user)],
-              components: [this.row(userObj.id)],
-            });
+            this.bot_message_id = (
+              await repliableObj.reply({
+                content: 'So you dare challenging me? HA!',
+                embeds: [this.embedRps(userObj, repliableObj.client.user)],
+                components: [this.row(userObj.id)],
+              })
+            ).id;
           } else {
             // (probably programmed already)
             await repliableObj.reply(
@@ -106,11 +108,13 @@ class RpsMatch {
             this.currentRoundPlayer = userObj.id;
             // As long as "repliableObj" is always a message object or an interaction object this line below will work
             this.buildCollector(userObj, userObj2, repliableObj);
-            this.bot_message_id = await repliableObj.reply({
-              content: 'Let the battle begin!',
-              embeds: [this.embedRps(userObj, repliableObj.client.user)],
-              components: [this.row(userObj.id)],
-            });
+            this.bot_message_id = (
+              await repliableObj.reply({
+                content: 'Let the battle begin!',
+                embeds: [this.embedRps(userObj, repliableObj.client.user)],
+                components: [this.row(userObj.id)],
+              })
+            ).id;
           } else {
             // (probably programmed already)
             await repliableObj.reply(
@@ -262,28 +266,38 @@ class RpsMatch {
     // `m` is a message object that will be passed through the filter function
     // const filter = (m) => m.content.includes('next');
     const filter = (i) => {
-      // console.log('entered filter');
-      if (i.user.id !== player1Obj.id) {
-        if (!player2Obj || (player2Obj && i.user.id !== player2Obj.id)) {
-          i.reply(
-            `<@${i.user.id}> don't press someone's else buttons! That's rude! >:T`
-          );
+      if (i.message && i.message.id === this.bot_message_id) {
+        // console.log('entered filter');
+        if (i.user.id !== player1Obj.id) {
+          if (!player2Obj || (player2Obj && i.user.id !== player2Obj.id)) {
+            i.reply(
+              `<@${i.user.id}> don't press someone's else buttons! That's rude! >:T`
+            );
+          } else if (
+            player2Obj &&
+            i.user.id === player2Obj.id &&
+            player2Obj.id !== this.currentRoundPlayer
+          ) {
+            i.reply(`<@${i.user.id}> it's not your turn!`);
+          }
+        } else if (i.user.id !== this.currentRoundPlayer) {
+          i.reply(`<@${i.user.id}> it's not your turn!`);
         }
-      } else if (i.user.id !== this.currentRoundPlayer) {
-        i.reply(`<@${i.user.id}> it's not your turn!`);
+        console.log(
+          i.user.id === this.currentRoundPlayer &&
+            i.customId !== 'rock' + player1Obj.id &&
+            i.customId !== 'paper' + player1Obj.id &&
+            i.customId !== 'scissors' + player1Obj.id
+        );
+        return (
+          i.user.id === this.currentRoundPlayer &&
+          (i.customId === 'rock' + player1Obj.id ||
+            i.customId === 'paper' + player1Obj.id ||
+            i.customId === 'scissors' + player1Obj.id)
+        );
+      } else {
+        return false;
       }
-      console.log(
-        i.user.id === this.currentRoundPlayer &&
-          i.customId !== 'rock' + player1Obj.id &&
-          i.customId !== 'paper' + player1Obj.id &&
-          i.customId !== 'scissors' + player1Obj.id
-      );
-      return (
-        i.user.id === this.currentRoundPlayer &&
-        (i.customId === 'rock' + player1Obj.id ||
-          i.customId === 'paper' + player1Obj.id ||
-          i.customId === 'scissors' + player1Obj.id)
-      );
     };
     // const collector = interaction.channel.createMessageCollector({
     collectors[player1Obj.id] =
@@ -390,6 +404,7 @@ class RpsMatch {
               default:
                 console.log('Error CODE 9009');
             }
+            this.currentRoundPlayer = player2Obj.id;
             break;
           case 1:
             console.log('one move');
@@ -411,6 +426,7 @@ class RpsMatch {
               default:
                 console.log('Error CODE 9010');
             }
+            this.currentRoundPlayer = player1Obj.id;
             break;
           default:
             console.log('Error CODE 9011');
