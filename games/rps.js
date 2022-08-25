@@ -251,6 +251,7 @@ class RpsMatch {
     return {
       title: 'Rock Paper Scissors',
       description: 'The game has started! Be careful with what you choose!',
+      color: 15512290,
       fields: [
         {
           name: 'Player 1',
@@ -270,6 +271,7 @@ class RpsMatch {
     return {
       title: 'Rock Paper Scissors',
       description: `Player ${playerNumber} made it's choice!`,
+      color: 15512290,
     };
   }
   embedRpsResult(player1Move, player2Move, GameEndBoolean) {
@@ -343,6 +345,16 @@ class RpsMatch {
     }
 
     const winner = result(player1Move, player2Move);
+    function winnercolor(winner_number) {
+      switch (winner_number) {
+        case 0:
+          return 16580521;
+        case 1:
+          return 10266879;
+        case 2:
+          return 16737123;
+      }
+    }
 
     return {
       title: 'Rock Paper Scissors',
@@ -351,6 +363,7 @@ class RpsMatch {
       )}! Player 2 chose ${numberToMove(player2Move)}!\n${
         winner !== 0 ? `The winner is Player ${winner}!` : "It's a draw!"
       }`,
+      color: winnercolor(winner),
     };
   }
 
