@@ -44,9 +44,13 @@ class RpsMatch {
     this.currentRoundPlayer = null;
     this.matchEndBool = false;
     this.bot_message_id = null;
+    this.fetchedMessage = null;
     this.turnMovesCount = 0;
     this.turnMoves = [];
     this.winner = null;
+    this.userObj = userObj;
+    this.userObj2 = userObj2;
+    this.client_user = repliableObj.client.user;
 
     this.effect(mode, repliableObj, userObj, userObj2);
   }
@@ -76,10 +80,15 @@ class RpsMatch {
             this.bot_message_id = (
               await repliableObj.reply({
                 content: 'So you dare challenging me? HA!',
-                embeds: [this.embedRps(userObj, repliableObj.client.user)],
+                embeds: [
+                  this.embedRpsRoundStart(userObj, repliableObj.client.user),
+                ],
                 components: [this.row(userObj.id)],
               })
             ).id;
+            this.fetchedMessage = await repliableObj.channel.messages.fetch(
+              this.bot_message_id
+            );
           } else {
             // (probably programmed already)
             await repliableObj.reply(
@@ -111,10 +120,15 @@ class RpsMatch {
             this.bot_message_id = (
               await repliableObj.reply({
                 content: 'Let the battle begin!',
-                embeds: [this.embedRps(userObj, repliableObj.client.user)],
+                embeds: [
+                  this.embedRpsRoundStart(userObj, repliableObj.client.user),
+                ],
                 components: [this.row(userObj.id)],
               })
             ).id;
+            this.fetchedMessage = await repliableObj.channel.messages.fetch(
+              this.bot_message_id
+            );
           } else {
             // (probably programmed already)
             await repliableObj.reply(
@@ -233,10 +247,10 @@ class RpsMatch {
     return true;
   }
 
-  embedRps(player1, player2, score1, score2) {
+  embedRpsRoundStart(player1, player2, score1, score2) {
     return {
       title: 'Rock Paper Scissors',
-      description: 'The game has started!\n Be careful with what you choose!',
+      description: 'The game has started! Be careful with what you choose!',
       fields: [
         {
           name: 'Player 1',
@@ -249,6 +263,94 @@ class RpsMatch {
           inline: true,
         },
       ],
+    };
+  }
+
+  embedRpsNewMove(playerNumber) {
+    return {
+      title: 'Rock Paper Scissors',
+      description: `Player ${playerNumber} made it's choice!`,
+    };
+  }
+  embedRpsResult(player1Move, player2Move, GameEndBoolean) {
+    // return: 0 -> draw, 1 -> player 1 win, 2 -> player 2 win
+    function result(pl1Move, pl2Move) {
+      switch (pl1Move) {
+        case 0:
+          switch (pl2Move) {
+            case 0:
+              return 0;
+              break;
+            case 1:
+              return 2;
+              break;
+            case 2:
+              return 1;
+              break;
+            default:
+              console.log('Error CODE 9017');
+          }
+          break;
+        case 1:
+          switch (pl2Move) {
+            case 0:
+              return 1;
+              break;
+            case 1:
+              return 0;
+              break;
+            case 2:
+              return 2;
+              break;
+            default:
+              console.log('Error CODE 9018');
+          }
+          break;
+        case 2:
+          switch (pl2Move) {
+            case 0:
+              return 2;
+              break;
+            case 1:
+              return 1;
+              break;
+            case 2:
+              return 0;
+              break;
+            default:
+              console.log('Error CODE 9019');
+          }
+          break;
+        default:
+          console.log('Error Code 9020');
+      }
+    }
+
+    function numberToMove(number) {
+      switch (number) {
+        case 0:
+          return '**rock**';
+          break;
+        case 1:
+          return '**paper**';
+          break;
+        case 2:
+          return '**scissors**';
+          break;
+        default:
+          console.log('Error CODE 9016');
+      }
+    }
+
+    const winner = result(player1Move, player2Move);
+
+    return {
+      title: 'Rock Paper Scissors',
+      description: `Player 1 chose ${numberToMove(
+        player1Move
+      )}! Player 2 chose ${numberToMove(player2Move)}!\n${
+        winner !== 0 ? `The winner is Player ${winner}!` : "It's a draw!"
+      }`,
     };
   }
 
@@ -309,18 +411,38 @@ class RpsMatch {
 
     if (!player2Obj) {
       collectors[player1Obj.id].on('collect', async (i) => {
+        await this.fetchedMessage.edit({
+          embeds: [this.embedRpsNewMove(1)],
+          components: [this.rowDisabled(this.userObj.id)],
+        });
+        await i.deferUpdate();
+        // wait 3 seconds
+        await new Promise((resolve) => setTimeout(resolve, 3000));
+
         const randomComputerPlay = Math.floor(Math.random() * 3);
         if (i.customId === 'rock' + player1Obj.id) {
           switch (randomComputerPlay) {
             case 0:
+              await this.fetchedMessage.edit({
+                embeds: [this.embedRpsResult(0, randomComputerPlay)],
+                components: [this.rowDisabled(this.userObj.id)],
+              });
               this.matchEndBool = await this.draw(player1Obj.id);
               console.log(this.matchEndBool);
               break;
             case 1:
+              await this.fetchedMessage.edit({
+                embeds: [this.embedRpsResult(0, randomComputerPlay)],
+                components: [this.rowDisabled(this.userObj.id)],
+              });
               this.matchEndBool = await this.lose(player1Obj.id);
               console.log(this.matchEndBool);
               break;
             case 2:
+              await this.fetchedMessage.edit({
+                embeds: [this.embedRpsResult(0, randomComputerPlay)],
+                components: [this.rowDisabled(this.userObj.id)],
+              });
               this.matchEndBool = await this.win(player1Obj.id);
               console.log(this.matchEndBool);
               break;
@@ -331,14 +453,26 @@ class RpsMatch {
         if (i.customId === 'paper' + player1Obj.id) {
           switch (randomComputerPlay) {
             case 0:
+              await this.fetchedMessage.edit({
+                embeds: [this.embedRpsResult(1, randomComputerPlay)],
+                components: [this.rowDisabled(this.userObj.id)],
+              });
               this.matchEndBool = await this.win(player1Obj.id);
               console.log(this.matchEndBool);
               break;
             case 1:
+              await this.fetchedMessage.edit({
+                embeds: [this.embedRpsResult(1, randomComputerPlay)],
+                components: [this.rowDisabled(this.userObj.id)],
+              });
               this.matchEndBool = await this.draw(player1Obj.id);
               console.log(this.matchEndBool);
               break;
             case 2:
+              await this.fetchedMessage.edit({
+                embeds: [this.embedRpsResult(1, randomComputerPlay)],
+                components: [this.rowDisabled(this.userObj.id)],
+              });
               this.matchEndBool = await this.lose(player1Obj.id);
               console.log(this.matchEndBool);
               break;
@@ -349,14 +483,26 @@ class RpsMatch {
         if (i.customId === 'scissors' + player1Obj.id) {
           switch (randomComputerPlay) {
             case 0:
+              await this.fetchedMessage.edit({
+                embeds: [this.embedRpsResult(2, randomComputerPlay)],
+                components: [this.rowDisabled(this.userObj.id)],
+              });
               this.matchEndBool = await this.lose(player1Obj.id);
               console.log(this.matchEndBool);
               break;
             case 1:
+              await this.fetchedMessage.edit({
+                embeds: [this.embedRpsResult(2, randomComputerPlay)],
+                components: [this.rowDisabled(this.userObj.id)],
+              });
               this.matchEndBool = await this.win(player1Obj.id);
               console.log(this.matchEndBool);
               break;
             case 2:
+              await this.fetchedMessage.edit({
+                embeds: [this.embedRpsResult(2, randomComputerPlay)],
+                components: [this.rowDisabled(this.userObj.id)],
+              });
               this.matchEndBool = await this.draw(player1Obj.id);
               console.log(this.matchEndBool);
               break;
@@ -368,13 +514,19 @@ class RpsMatch {
         if (this.matchEndBool) {
           console.log('MATCH END');
           // await i.update({ content: `We have a winner! Player ${winner}!` });
-          await i.deferUpdate();
+          // DANGEROUS CHANGE
+          // await i.deferUpdate();
           await i.channel.send(`We have a winner! Player ${this.winner}!`);
           // await i.channel.send('The match has finished!');
         } else {
+          await this.fetchedMessage.edit({
+            components: [this.row(this.userObj.id)],
+          });
           await i.channel.send('It was a draw! One more turn!!!');
           // await i.update({ content: 'It was a draw! One more turn!!!' });
-          await i.deferUpdate();
+
+          // DANGEROUS CHANGE
+          // await i.deferUpdate();
           // await i.channel.send('The match has finished!');
         }
       });
@@ -404,6 +556,24 @@ class RpsMatch {
               default:
                 console.log('Error CODE 9009');
             }
+
+            await this.fetchedMessage.edit({
+              embeds: [this.embedRpsNewMove(1)],
+              components: [this.rowDisabled(this.userObj.id)],
+            });
+            await i.deferUpdate();
+            // wait 2 seconds
+            await new Promise((resolve) => setTimeout(resolve, 2000));
+            await this.fetchedMessage.edit({
+              embeds: [
+                this.embedRpsRoundStart(
+                  this.userObj,
+                  this.userObj2 ? this.userObj2 : this.client_user
+                ),
+              ],
+              components: [this.row(this.userObj.id)],
+            });
+
             this.currentRoundPlayer = player2Obj.id;
             break;
           case 1:
@@ -426,6 +596,21 @@ class RpsMatch {
               default:
                 console.log('Error CODE 9010');
             }
+
+            await this.fetchedMessage.edit({
+              embeds: [this.embedRpsNewMove(2)],
+              components: [this.rowDisabled(this.userObj.id)],
+            });
+            await i.deferUpdate();
+            // wait 3 seconds
+            await new Promise((resolve) => setTimeout(resolve, 3000));
+            await this.fetchedMessage.edit({
+              embeds: [
+                this.embedRpsResult(this.turnMoves[0], this.turnMoves[1]),
+              ],
+              components: [this.rowDisabled(this.userObj.id)],
+            });
+
             this.currentRoundPlayer = player1Obj.id;
             break;
           default:
@@ -438,15 +623,12 @@ class RpsMatch {
             case 0:
               switch (this.turnMoves[1]) {
                 case 0:
-                  console.log(' 0 x 0 ');
                   this.matchEndBool = await this.draw(player1Obj.id);
                   break;
                 case 1:
-                  console.log(' 0 x 1 ');
                   this.matchEndBool = await this.lose(player1Obj.id);
                   break;
                 case 2:
-                  console.log(' 0 x 2 ');
                   this.matchEndBool = await this.win(player1Obj.id);
                   break;
                 default:
@@ -495,7 +677,8 @@ class RpsMatch {
         if (this.matchEndBool) {
           console.log('MATCH END');
           // await i.update({ content: `We have a winner! Player ${winner}!` });
-          await i.deferUpdate();
+          // DANGEROUS CHANGE
+          // await i.deferUpdate();
           await i.channel.send(`We have a winner! Player ${this.winner}!`);
           // await i.channel.send('The match has finished!');
         } else {
@@ -504,7 +687,11 @@ class RpsMatch {
             // await i.update({ content: 'It was a draw! One more turn!!!' });
           }
 
-          await i.deferUpdate();
+          await this.fetchedMessage.edit({
+            components: [this.row(this.userObj.id)],
+          });
+          // DANGEROUS CHANGE
+          // await i.deferUpdate();
           // await i.channel.send('The match has finished!');
         }
       });
@@ -550,6 +737,31 @@ class RpsMatch {
           .setLabel('✌🏻 Scissors')
           .setStyle(ButtonStyle.Primary)
           .setDisabled(false)
+      );
+  }
+
+  rowDisabled(player1id) {
+    return new ActionRowBuilder()
+      .addComponents(
+        new ButtonBuilder()
+          .setCustomId('rock' + player1id)
+          .setLabel('✊🏻 Rock')
+          .setStyle(ButtonStyle.Primary)
+          .setDisabled(true)
+      )
+      .addComponents(
+        new ButtonBuilder()
+          .setCustomId('paper' + player1id)
+          .setLabel('✋🏻 Paper')
+          .setStyle(ButtonStyle.Primary)
+          .setDisabled(true)
+      )
+      .addComponents(
+        new ButtonBuilder()
+          .setCustomId('scissors' + player1id)
+          .setLabel('✌🏻 Scissors')
+          .setStyle(ButtonStyle.Primary)
+          .setDisabled(true)
       );
   }
 }
