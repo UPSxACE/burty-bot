@@ -66,7 +66,7 @@ module.exports = {
     const prefix = require('../config.json').prefix;
     const firstPartOfString = message.content.slice(0, prefix.length);
 
-    if (firstPartOfString === prefix) {
+    if (firstPartOfString.toLowerCase() === prefix.toLowerCase()) {
       // console.log("It's a command confirmed.");
 
       // !help commands      ----> ['help', 'commands']

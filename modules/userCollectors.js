@@ -1,3 +1,4 @@
-const collectors = {}; // userId: collector
+const collectors = {};
+// userId: collector
 
 module.exports = { collectors };
