@@ -1,3 +1,4 @@
+// main bot embed color: 15512290;
 const { Collection } = require('discord.js');
 const { Client, GatewayIntentBits } = require('discord.js');
 require('dotenv').config();
