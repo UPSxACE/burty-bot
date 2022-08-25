@@ -20,7 +20,7 @@ const commands = [
 const embed = {
   title: 'Command List',
   description: `This is a list of all the commands that can be executed manually,  with the ${prefix} prefix.\nMore options are available using slash commands ( **/** ).`,
-  color: null,
+  color: 15512290,
   fields: [
     ...commands.map((command) => {
       return {

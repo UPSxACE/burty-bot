@@ -10,7 +10,7 @@ const embedHelp = {
   title: 'Rock Paper Scissors',
   description:
     "Rock, Paper, Scissors looks like a simple hand game, but don't get fooled!!!\nIt can quickly become a deadly mindgame!\n\n__**Rules are simple:**__\n**Rock** crushes **Scissors**\n**Scissors** cuts **Paper**\n**Paper** covers **Rock**\n\u200B",
-  color: null,
+  color: 15512290,
   fields: [
     {
       name: `\`${prefix}rps start [optional: bo3]\``,

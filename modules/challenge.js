@@ -86,6 +86,7 @@ const buildCollector = (
               title: 'Offer accepted!',
               description:
                 'Ready or not, here we go. Your battle will be legendary!',
+              color: 4437377,
             },
           ],
           components: [],
@@ -98,6 +99,7 @@ const buildCollector = (
               title: 'Offer accepted!',
               description:
                 'Ready or not, here we go. Your battle will be legendary!',
+              color: 4437377,
             },
           ],
           components: [],
@@ -116,6 +118,7 @@ const buildCollector = (
               title: 'Offer declined!',
               description:
                 "Try looking for someone else, because that one doesn't have the guts needed >:)",
+              color: 15746887,
             },
           ],
           components: [],
@@ -128,6 +131,7 @@ const buildCollector = (
               title: 'Offer declined!',
               description:
                 "Try looking for someone else, because that one doesn't have the guts needed >:)",
+              color: 15746887,
             },
           ],
           components: [],
@@ -145,6 +149,7 @@ const buildCollector = (
             title: 'Offer expired!',
             description:
               "Try looking for someone else, because that one doesn't have the guts needed >:)",
+            color: 15746887,
           },
         ],
         components: [],
@@ -158,6 +163,7 @@ const buildCollector = (
             title: 'Offer expired!',
             description:
               "Try looking for someone else, because that one doesn't have the guts needed >:)",
+            color: 15746887,
           },
         ],
         components: [],
@@ -209,6 +215,7 @@ async function generateInvite(
             {
               title: `${gameName} challenge!`,
               description: `<@${user}> invited you, <@${challengedPerson.id}>, for a ${gameName} match!`,
+              color: 15512290,
             },
           ],
           components: [challengeAnswerRow(challengedPersonId)],
