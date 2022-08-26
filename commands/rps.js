@@ -1,13 +1,6 @@
-const {
-  SlashCommandBuilder,
-  ActionRowBuilder,
-  ButtonBuilder,
-  ButtonStyle,
-} = require('discord.js');
+const { SlashCommandBuilder } = require('discord.js');
 
-function transformMention(mention) {
-  return mention.slice(2, -1);
-}
+const transformMention = require('../utils/transformMention');
 const rps = require('../games/rps');
 const challenge = require('../modules/challenge');
 

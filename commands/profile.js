@@ -2,9 +2,7 @@ const { SlashCommandBuilder } = require('discord.js');
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const profilesTracker = require('../modules/profilesTracker');
 
-function transformMention(mention) {
-  return mention.slice(2, -1);
-}
+const transformMention = require('../utils/transformMention');
 
 module.exports = {
   data: new SlashCommandBuilder()

@@ -1,8 +1,6 @@
 const { SlashCommandBuilder } = require('discord.js');
 const gifapi = require('../modules/gifAPI.js');
-function transformMention(mention) {
-  return mention.slice(2, -1);
-}
+const transformMention = require('../utils/transformMention');
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('tickle')
