@@ -82,6 +82,10 @@ function generateTextDecoration(loveLevel, smallestName, biggestName) {
       // 41-50
       return ['Very one-sided love.', '🙄'];
     }
+    if (loveLevel === 0) {
+      // 0
+      return ["I've never seen worse!!", '😱'];
+    }
   }
 }
 
@@ -145,12 +149,17 @@ async function effect(repliableObj, person1, person2) {
 
   const num1 = Number(person1);
   const num2 = Number(person2);
+  const randomizer =
+    Number(String(person1)[1]) +
+    Number(String(person2)[1]) +
+    Number(String(person1)[2]) +
+    Number(String(person2)[2]);
 
-  const loveLevel = ((num1 % 101) + (num2 % 101)) % 101;
+  const loveLevel = (((num1 % 101) + (num2 % 101)) * randomizer - 9) % 101;
   const textDecoration = generateTextDecoration(
     loveLevel,
-    num1 > num2 ? num2 : num1,
-    num1 > num2 ? num1 : num2
+    num1 > num2 ? p2.username : p1.username,
+    num1 > num2 ? p1.username : p2.username
   );
 
   // ----
