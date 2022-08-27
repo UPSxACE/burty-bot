@@ -3,7 +3,7 @@ const gifapi = require('../modules/gifAPI.js');
 const transformMention = require('../utils/transformMention');
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName('slap')
+    .setName('bite')
     .setDescription('Bites a user.')
     .addUserOption((option) =>
       option
