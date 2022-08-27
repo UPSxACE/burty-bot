@@ -356,6 +356,11 @@ const cache = {
     const daily_reward_message = await daily(userId);
     return daily_reward_message;
   },
+
+  async rewardGameWin(userId, gameId) {
+    const reward_win_message = await rewardWin(userId, gameId);
+    return reward_win_message;
+  },
 };
 
 module.exports = { cache };

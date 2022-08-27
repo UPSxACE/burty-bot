@@ -17,9 +17,12 @@ module.exports = {
       content: null,
       embeds: [
         {
-          title: `${await interaction.member.user
-            .username} pokes ${await interaction.options.getUser('target')
-            .username} !`,
+          author: {
+            name: `${await interaction.member.user
+              .username} pokes ${await interaction.options.getUser('target')
+              .username}!`,
+            icon_url: interaction.user.avatarURL(),
+          },
           color: 15512290,
           image: {
             url: await gifapi(term),
@@ -41,7 +44,12 @@ module.exports = {
             content: null,
             embeds: [
               {
-                title: `${message.author.username} pokes ${targetuser.username} !`,
+                author: {
+                  name: `${await message.author
+                    .username} pokes ${await targetuser.username}!`,
+                  icon_url: message.author.avatarURL(),
+                },
+                timestamp: new Date().toISOString(),
                 color: 15512290,
                 image: {
                   url: await gifapi(term),
@@ -57,7 +65,12 @@ module.exports = {
             content: null,
             embeds: [
               {
-                title: `${message.author.username} pokes ${targetuser.username} !`,
+                author: {
+                  name: `${await message.author
+                    .username} pokes ${await targetuser.username}!`,
+                  icon_url: message.author.avatarURL(),
+                },
+                timestamp: new Date().toISOString(),
                 color: 15512290,
                 image: {
                   url: await gifapi(term),
@@ -77,7 +90,12 @@ module.exports = {
         content: null,
         embeds: [
           {
-            title: `${message.author.username} pokes ${message.author.username} !`,
+            author: {
+              name: `${await message.author.username} pokes ${await message
+                .author.username}!`,
+              icon_url: message.author.avatarURL(),
+            },
+            timestamp: new Date().toISOString(),
             color: 15512290,
             image: {
               url: await gifapi(term),

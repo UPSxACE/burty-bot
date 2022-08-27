@@ -8,7 +8,11 @@ module.exports = {
       content: null,
       embeds: [
         {
-          title: `${await interaction.member.user.username} Laughed!`,
+          author: {
+            name: `${await interaction.member.user.username} laughed!`,
+            icon_url: interaction.member.user.avatarURL(),
+          },
+          timestamp: new Date().toISOString(),
           color: 15512290,
           image: {
             url: await gifapi(term),
@@ -25,7 +29,11 @@ module.exports = {
         content: null,
         embeds: [
           {
-            title: `${message.author.username} Laughed!`,
+            author: {
+              name: `${await message.author.username} laughed!`,
+              icon_url: message.author.avatarURL(),
+            },
+            timestamp: new Date().toISOString(),
             color: 15512290,
             image: {
               url: await gifapi(term),

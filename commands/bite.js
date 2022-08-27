@@ -3,7 +3,7 @@ const gifapi = require('../modules/gifAPI.js');
 const transformMention = require('../utils/transformMention');
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName('slap')
+    .setName('bite')
     .setDescription('Bites a user.')
     .addUserOption((option) =>
       option
@@ -12,14 +12,20 @@ module.exports = {
         .setRequired(true)
     ),
   async execute(interaction) {
+    console.log(interaction.user.avatarURL());
     const term = 'anime bite';
     await interaction.reply({
       content: null,
       embeds: [
         {
-          title: `${await interaction.member.user
-            .username} bit ${await interaction.options.getUser('target')
-            .username} !`,
+          author: {
+            name: `${await interaction.member.user
+              .username} bit ${await interaction.options.getUser('target')
+              .username}!`,
+            icon_url: interaction.user.avatarURL(),
+          },
+          timestamp: new Date().toISOString(),
+          title: null,
           color: 15512290,
           image: {
             url: await gifapi(term),
@@ -41,7 +47,13 @@ module.exports = {
             content: null,
             embeds: [
               {
-                title: `${message.author.username} bit ${targetuser.username} !`,
+                author: {
+                  name: `${await message.author
+                    .username} bit ${await targetuser.username}!`,
+                  icon_url: message.author.avatarURL(),
+                },
+                timestamp: new Date().toISOString(),
+                title: null,
                 color: 15512290,
                 image: {
                   url: await gifapi(term),
@@ -57,7 +69,13 @@ module.exports = {
             content: null,
             embeds: [
               {
-                title: `${message.author.username} bit ${targetuser.username} !`,
+                author: {
+                  name: `${await message.author
+                    .username} bit ${await targetuser.username}!`,
+                  icon_url: message.author.avatarURL(),
+                },
+                timestamp: new Date().toISOString(),
+                title: null,
                 color: 15512290,
                 image: {
                   url: await gifapi(term),
@@ -77,7 +95,13 @@ module.exports = {
         content: null,
         embeds: [
           {
-            title: `${message.author.username} bit ${message.author.username} !`,
+            author: {
+              name: `${await message.author.username} bit ${await message.author
+                .username}!`,
+              icon_url: message.author.avatarURL(),
+            },
+            timestamp: new Date().toISOString(),
+            title: null,
             color: 15512290,
             image: {
               url: await gifapi(term),

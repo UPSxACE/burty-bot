@@ -1,3 +1,4 @@
+// gameId = 0
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 
 const { version, prefix } = require('../config.json');
