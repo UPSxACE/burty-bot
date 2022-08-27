@@ -143,8 +143,15 @@ async function effect(repliableObj, person1, person2) {
     name: 'ship.png',
   });
 
-  const loveLevel = ((Number(person1) % 101) + (Number(person2) % 101)) % 101;
-  const textDecoration = generateTextDecoration(loveLevel);
+  const num1 = Number(person1);
+  const num2 = Number(person2);
+
+  const loveLevel = ((num1 % 101) + (num2 % 101)) % 101;
+  const textDecoration = generateTextDecoration(
+    loveLevel,
+    num1 > num2 ? num2 : num1,
+    num1 > num2 ? num1 : num2
+  );
 
   // ----
 
