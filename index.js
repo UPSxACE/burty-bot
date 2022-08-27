@@ -7,6 +7,21 @@ const path = require('node:path');
 const mongoose = require('mongoose');
 const profilesTracker = require('./modules/profilesTracker');
 
+// shut down experimental warnings
+const originalEmit = process.emit;
+process.emit = (name, data) => {
+  if (
+    name === 'warning' &&
+    typeof data === 'object' &&
+    data.name === 'ExperimentalWarning'
+  ) {
+    return false;
+  }
+
+  return originalEmit.apply(process, arguments);
+};
+
+// close mongodb connection before closing node app
 process.on('SIGINT', () => {
   mongoose.connection.close(() => {
     console.log(
