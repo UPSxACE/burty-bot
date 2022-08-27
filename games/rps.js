@@ -49,7 +49,7 @@ class RpsMatch {
     this.turnMoves = [];
     this.winner = null;
     this.userObj = userObj;
-    this.userObj2 = userObj2;
+    this.userObj2 = userObj2 ? userObj2 : repliableObj.client.user;
     this.client_user = repliableObj.client.user;
 
     this.effect(mode, repliableObj, userObj, userObj2);
@@ -81,7 +81,11 @@ class RpsMatch {
               await repliableObj.reply({
                 content: 'So you dare challenging me? HA!',
                 embeds: [
-                  this.embedRpsRoundStart(userObj, repliableObj.client.user),
+                  this.embedRpsRoundStart(
+                    userObj,
+                    repliableObj.client.user,
+                    true
+                  ),
                 ],
                 components: [this.row(userObj.id)],
               })
@@ -98,7 +102,6 @@ class RpsMatch {
 
           break;
         case 'pvp':
-          console.log('ANOTHER TEST OBJ2: ' + userObj2);
           if (!usersPlaying[userObj.id]) {
             usersPlaying[userObj.id] = {
               matchHost: userObj.id,
@@ -121,7 +124,11 @@ class RpsMatch {
               await repliableObj.reply({
                 content: 'Let the battle begin!',
                 embeds: [
-                  this.embedRpsRoundStart(userObj, repliableObj.client.user),
+                  this.embedRpsRoundStart(
+                    userObj,
+                    repliableObj.client.user,
+                    true
+                  ),
                 ],
                 components: [this.row(userObj.id)],
               })
@@ -197,21 +204,11 @@ class RpsMatch {
   win(matchHostId) {
     this.winner = 1;
     // Collectore, Match, and Playing Cleanup!
-    console.log(typeof usersMatch[matchHostId].player1);
-    console.log(usersMatch[matchHostId]);
-    console.log(collectors[usersMatch[matchHostId].player1.id]);
-    console.log(
-      'usersmatch: ' +
-        Boolean(
-          usersMatch[matchHostId].player1 &&
-            collectors[usersMatch[matchHostId].player1]
-        )
-    );
     if (
       usersMatch[matchHostId].player1 &&
       collectors[usersMatch[matchHostId].player1]
     ) {
-      console.log('found');
+      // console.log('found');
       collectors[usersMatch[matchHostId].player1].stop();
       collectors[usersMatch[matchHostId].player1] = null;
     }
@@ -219,7 +216,7 @@ class RpsMatch {
       usersMatch[matchHostId].player2 &&
       collectors[usersMatch[matchHostId].player2]
     ) {
-      console.log('found');
+      // console.log('found');
       collectors[usersMatch[matchHostId].player2].stop();
       collectors[usersMatch[matchHostId].player2] = null;
     }
@@ -247,10 +244,19 @@ class RpsMatch {
     return true;
   }
 
-  embedRpsRoundStart(player1, player2, score1, score2) {
+  embedRpsRoundStart(
+    player1,
+    player2,
+    gameStart,
+    currentPlayerUsername,
+    score1,
+    score2
+  ) {
     return {
       title: 'Rock Paper Scissors',
-      description: 'The game has started! Be careful with what you choose!',
+      description: gameStart
+        ? 'The game has started! Be careful with what you choose!'
+        : `It's your turn, ${currentPlayerUsername}! What will be your next move?`,
       color: 15512290,
       fields: [
         {
@@ -270,7 +276,9 @@ class RpsMatch {
   embedRpsNewMove(playerNumber) {
     return {
       title: 'Rock Paper Scissors',
-      description: `Player ${playerNumber} made it's choice!`,
+      description: `Player ${
+        playerNumber === 1 ? this.userObj.username : this.userObj2.username
+      } made it's choice!`,
       color: 15512290,
     };
   }
@@ -358,10 +366,14 @@ class RpsMatch {
 
     return {
       title: 'Rock Paper Scissors',
-      description: `Player 1 chose ${numberToMove(
+      description: `${this.userObj.username} chose ${numberToMove(
         player1Move
-      )}! Player 2 chose ${numberToMove(player2Move)}!\n${
-        winner !== 0 ? `The winner is Player ${winner}!` : "It's a draw!"
+      )}! ${this.userObj2.username} chose ${numberToMove(player2Move)}!\n${
+        winner !== 0
+          ? `The winner is ${
+              winner === 1 ? this.userObj.username : this.userObj2.username
+            }!`
+          : "It's a draw!"
       }`,
       color: winnercolor(winner),
     };
@@ -369,12 +381,12 @@ class RpsMatch {
 
   buildCollector(player1Obj, player2Obj, interaction) {
     if (collectors[player1Obj.id]) {
-      console.log('Another collector exists');
+      // console.log('Another collector exists');
       collectors[player1Obj.id].stop();
     }
     // hopefully this code below won't break anything lol
     if (player2Obj && collectors[player2Obj.id]) {
-      console.log('Another collector exists');
+      // console.log('Another collector exists');
       collectors[player2Obj.id].stop();
     }
 
@@ -398,12 +410,6 @@ class RpsMatch {
         } else if (i.user.id !== this.currentRoundPlayer) {
           i.reply(`<@${i.user.id}> it's not your turn!`);
         }
-        console.log(
-          i.user.id === this.currentRoundPlayer &&
-            i.customId !== 'rock' + player1Obj.id &&
-            i.customId !== 'paper' + player1Obj.id &&
-            i.customId !== 'scissors' + player1Obj.id
-        );
         return (
           i.user.id === this.currentRoundPlayer &&
           (i.customId === 'rock' + player1Obj.id ||
@@ -441,7 +447,6 @@ class RpsMatch {
                 components: [this.rowDisabled(this.userObj.id)],
               });
               this.matchEndBool = await this.draw(player1Obj.id);
-              console.log(this.matchEndBool);
               break;
             case 1:
               await this.fetchedMessage.edit({
@@ -449,7 +454,6 @@ class RpsMatch {
                 components: [this.rowDisabled(this.userObj.id)],
               });
               this.matchEndBool = await this.lose(player1Obj.id);
-              console.log(this.matchEndBool);
               break;
             case 2:
               await this.fetchedMessage.edit({
@@ -457,7 +461,6 @@ class RpsMatch {
                 components: [this.rowDisabled(this.userObj.id)],
               });
               this.matchEndBool = await this.win(player1Obj.id);
-              console.log(this.matchEndBool);
               break;
             default:
               console.log('Error CODE 9004');
@@ -471,7 +474,6 @@ class RpsMatch {
                 components: [this.rowDisabled(this.userObj.id)],
               });
               this.matchEndBool = await this.win(player1Obj.id);
-              console.log(this.matchEndBool);
               break;
             case 1:
               await this.fetchedMessage.edit({
@@ -479,7 +481,6 @@ class RpsMatch {
                 components: [this.rowDisabled(this.userObj.id)],
               });
               this.matchEndBool = await this.draw(player1Obj.id);
-              console.log(this.matchEndBool);
               break;
             case 2:
               await this.fetchedMessage.edit({
@@ -487,7 +488,6 @@ class RpsMatch {
                 components: [this.rowDisabled(this.userObj.id)],
               });
               this.matchEndBool = await this.lose(player1Obj.id);
-              console.log(this.matchEndBool);
               break;
             default:
               console.log('Error CODE 9004');
@@ -501,7 +501,6 @@ class RpsMatch {
                 components: [this.rowDisabled(this.userObj.id)],
               });
               this.matchEndBool = await this.lose(player1Obj.id);
-              console.log(this.matchEndBool);
               break;
             case 1:
               await this.fetchedMessage.edit({
@@ -509,7 +508,6 @@ class RpsMatch {
                 components: [this.rowDisabled(this.userObj.id)],
               });
               this.matchEndBool = await this.win(player1Obj.id);
-              console.log(this.matchEndBool);
               break;
             case 2:
               await this.fetchedMessage.edit({
@@ -517,7 +515,6 @@ class RpsMatch {
                 components: [this.rowDisabled(this.userObj.id)],
               });
               this.matchEndBool = await this.draw(player1Obj.id);
-              console.log(this.matchEndBool);
               break;
             default:
               console.log('Error CODE 9004');
@@ -525,17 +522,31 @@ class RpsMatch {
         }
 
         if (this.matchEndBool) {
-          console.log('MATCH END');
+          // console.log('MATCH END');
           // await i.update({ content: `We have a winner! Player ${winner}!` });
           // DANGEROUS CHANGE
           // await i.deferUpdate();
           await i.channel.send(`We have a winner! Player ${this.winner}!`);
           // await i.channel.send('The match has finished!');
         } else {
+          await i.channel.send('It was a draw! One more turn!!!');
+
+          // wait 2 second
+          await new Promise((resolve) => setTimeout(resolve, 2000));
+
           await this.fetchedMessage.edit({
+            embeds: [
+              this.embedRpsRoundStart(
+                this.userObj,
+                this.userObj2 ? this.userObj2 : this.client_user,
+                false,
+                this.userObj.username,
+                this.score1,
+                this.score2
+              ),
+            ],
             components: [this.row(this.userObj.id)],
           });
-          await i.channel.send('It was a draw! One more turn!!!');
           // await i.update({ content: 'It was a draw! One more turn!!!' });
 
           // DANGEROUS CHANGE
@@ -544,25 +555,21 @@ class RpsMatch {
         }
       });
     } else {
-      console.log('atleast here ...');
       collectors[player1Obj.id].on('collect', async (i) => {
         switch (this.turnMovesCount) {
           case 0:
-            console.log('zero moves');
-            console.log(this.turnMoves);
+            // console.log('zero moves');
+            // console.log(this.turnMoves);
             switch (i.customId) {
               case 'rock' + player1Obj.id:
-                console.log('rock');
                 this.turnMoves = [...this.turnMoves, 0];
                 // 0 means rock
                 break;
               case 'paper' + player1Obj.id:
-                console.log('pap');
                 this.turnMoves = [...this.turnMoves, 1];
                 // 1 means paper
                 break;
               case 'scissors' + player1Obj.id:
-                console.log('scis');
                 this.turnMoves = [...this.turnMoves, 2];
                 // 2 means scissors
                 break;
@@ -575,24 +582,12 @@ class RpsMatch {
               components: [this.rowDisabled(this.userObj.id)],
             });
             await i.deferUpdate();
-            // wait 2 seconds
-            await new Promise((resolve) => setTimeout(resolve, 2000));
-            await this.fetchedMessage.edit({
-              embeds: [
-                this.embedRpsRoundStart(
-                  this.userObj,
-                  this.userObj2 ? this.userObj2 : this.client_user
-                ),
-              ],
-              components: [this.row(this.userObj.id)],
-            });
-
             this.currentRoundPlayer = player2Obj.id;
             break;
           case 1:
-            console.log('one move');
-            console.log('turn moves: ');
-            console.log(this.turnMoves);
+            // console.log('one move');
+            // console.log('turn moves: ');
+            // console.log(this.turnMoves);
             switch (i.customId) {
               case 'rock' + player1Obj.id:
                 this.turnMoves = [...this.turnMoves, 0];
@@ -630,8 +625,8 @@ class RpsMatch {
             console.log('Error CODE 9011');
         }
         if (this.turnMovesCount === 1) {
-          console.log('should be turn over');
-          console.log(this.turnMoves);
+          // console.log('should be turn over');
+          // console.log(this.turnMoves);
           switch (this.turnMoves[0]) {
             case 0:
               switch (this.turnMoves[1]) {
@@ -688,7 +683,7 @@ class RpsMatch {
         }
 
         if (this.matchEndBool) {
-          console.log('MATCH END');
+          // console.log('MATCH END');
           // await i.update({ content: `We have a winner! Player ${winner}!` });
           // DANGEROUS CHANGE
           // await i.deferUpdate();
@@ -700,9 +695,23 @@ class RpsMatch {
             // await i.update({ content: 'It was a draw! One more turn!!!' });
           }
 
+          // wait 2 second
+          await new Promise((resolve) => setTimeout(resolve, 2000));
+
           await this.fetchedMessage.edit({
+            embeds: [
+              this.embedRpsRoundStart(
+                this.userObj,
+                this.userObj2 ? this.userObj2 : this.client_user,
+                false,
+                this.userObj.username,
+                this.score1,
+                this.score2
+              ),
+            ],
             components: [this.row(this.userObj.id)],
           });
+
           // DANGEROUS CHANGE
           // await i.deferUpdate();
           // await i.channel.send('The match has finished!');
@@ -710,18 +719,17 @@ class RpsMatch {
       });
     }
 
-    console.log('ITS GETTING HERE RIGHT?');
     collectors[player1Obj.id].on('end', async (collected) => {
-      console.log('Collector end being called');
+      // console.log('Collector end being called');
       if (interaction.type === 0) {
-        console.log('end1');
+        // console.log('end1');
         await (
           await interaction.channel.messages.fetch(this.bot_message_id)
         ).edit({
           components: [],
         });
       } else {
-        console.log('end2');
+        // console.log('end2');
         await interaction.editReply({ components: [] });
       }
       // console.log(`Collected ${collected.size} items`);
