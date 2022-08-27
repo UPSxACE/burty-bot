@@ -10,7 +10,6 @@ async function sendRequest(search_url) {
   await axios
     .get(search_url)
     .then((response) => {
-      console.log(response);
       result =
         response.data.results[Math.floor(Math.random() * 25)].media_formats.gif
           .url;

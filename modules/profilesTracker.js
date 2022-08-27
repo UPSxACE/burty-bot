@@ -1,6 +1,34 @@
 const profilesSchema = require('../schema/profiles-schema');
 const maxXpPerLevel = 200;
 
+function timeLeftForDaily(timestampMs) {
+  const dayMlSeconds = 24 * 60 * 60 * 1000;
+  const timeLeftInMlSecs = dayMlSeconds - timestampMs;
+  // Create a new JavaScript Date object based on the timestamp
+  let dateMs = new Date(timeLeftInMlSecs);
+  // Hours part from the timestamp
+  const hours = dateMs.getUTCHours();
+  // Minutes part from the timestamp
+  const minutes = '0' + dateMs.getUTCMinutes();
+  // Seconds part from the timestamp
+  const seconds = '0' + dateMs.getUTCSeconds();
+
+  // format time
+  const formattedTime =
+    hours +
+    ` hour${hours > 0 ? 's' : ''} ` +
+    minutes.slice(-2) +
+    ` min${minutes > 0 ? 's' : ''} and ` +
+    seconds.slice(-2) +
+    ` second${seconds > 0 ? 's' : ''}!`;
+
+  // console.log(formattedTime);
+  dateMs = new Date(timeLeftInMlSecs);
+  // console.log(dateMs.getTime());
+
+  return formattedTime;
+}
+
 function rewardDaily(userObject, streakLevel) {
   let daily_claim_message = '';
 
@@ -96,8 +124,9 @@ async function daily(userId) {
 
     // REVISE THIS MiliSec LOGIC!!!
     if (difMlSeconds < dayMlSeconds) {
-      daily_claim_message =
-        "It's still too early to claim your next daily reward!";
+      daily_claim_message = `It's still too early to claim your next daily reward! Try again in **${timeLeftForDaily(
+        difMlSeconds
+      )}**`;
     } else if (difMlSeconds > dayMlSeconds * 7) {
       cache[userId].streakLevel = 0;
       cache[userId].lastDailyClaimedMlSec = nowMlSeconds;
