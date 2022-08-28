@@ -89,7 +89,7 @@ module.exports = {
           return;
         }
       } else {
-        console.log(content);
+        // console.log(content);
         if (content.length === 1) {
           message.reply("Choose a command! I'm Ready!");
         }

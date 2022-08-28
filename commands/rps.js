@@ -21,12 +21,33 @@ module.exports = {
         .setDescription(
           'Challenge someone for a rock paper scissors match. You can also bet some of your own coins!'
         )
-        .addMentionableOption((option) =>
+        .addUserOption((option) =>
           option.setName('member').setDescription('The person to challenge.')
         )
     ),
   async execute(interaction) {
-    await interaction.reply('Pong!');
+    switch (interaction.options.getSubcommand()) {
+      case 'start':
+        await rps('ai', interaction, interaction.user, null);
+        break;
+      case 'challenge':
+        try {
+          await challenge(
+            0,
+            interaction,
+            interaction.options.getUser('member'),
+            rps
+          );
+        } catch (err) {
+          console.log('Error CODE 9005');
+          interaction.reply("Couldn't find such user :(");
+        }
+
+        // await challenge(0, message, rps);
+        break;
+      default:
+        await rps(null, interaction, interaction.user, null);
+    }
   },
   async executeManual(message, content) {
     switch (content[1]) {
@@ -34,7 +55,6 @@ module.exports = {
         await rps('ai', message, message.author, null);
         break;
       case 'challenge':
-        console.log(content);
         if (content[2]) {
           try {
             await challenge(0, message, transformMention(content[2]), rps);

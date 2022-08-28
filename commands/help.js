@@ -13,8 +13,24 @@ const commands = [
     'settings username',
     'Set the username in your profile card. Leave empty to let it go back to default.',
   ],
-  ['settings aboutme', 'Set the about me message in your profile card.'],
+  [
+    'settings aboutme "some words here"',
+    'Set the about me message in your profile card.',
+  ],
   ['daily', 'Claim your daily reward.'],
+  ['8ball "some words here"', 'Ask the magic 8ball something!'],
+  [
+    'ship [optional1: <user>] [optional2: <user>]',
+    'Evaluate the love compatibility between two different users.',
+  ],
+  [
+    'blush, cry, dab, dance, disgust, dodge, eat, laugh, lewd',
+    'React with a gif.',
+  ],
+  [
+    'bite, hug, kiss, lick, pat, poke, punch, shoot, slap, tickle + <user>',
+    'React with a gif.',
+  ],
 ];
 
 const embed = {
