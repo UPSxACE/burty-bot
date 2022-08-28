@@ -6,6 +6,7 @@ const { version, prefix } = require('../config.json');
 const usersMatch = require('../modules/usersMatch');
 const usersPlaying = require('../modules/usersPlaying');
 const collectors = require('../modules/userCollectors');
+const profilesTracker = require('../modules/profilesTracker');
 
 const embedHelp = {
   title: 'Rock Paper Scissors',
@@ -124,13 +125,7 @@ class RpsMatch {
             this.bot_message_id = (
               await repliableObj.reply({
                 content: 'Let the battle begin!',
-                embeds: [
-                  this.embedRpsRoundStart(
-                    userObj,
-                    repliableObj.client.user,
-                    true
-                  ),
-                ],
+                embeds: [this.embedRpsRoundStart(userObj, userObj2, true)],
                 components: [this.row(userObj.id)],
               })
             ).id;
@@ -258,7 +253,8 @@ class RpsMatch {
       description: gameStart
         ? 'The game has started! Be careful with what you choose!'
         : `It's your turn, ${currentPlayerUsername}! What will be your next move?`,
-      color: 15512290,
+      // color: 15512290,
+      color: 16768820,
       fields: [
         {
           name: 'Player 1',
@@ -276,11 +272,12 @@ class RpsMatch {
 
   embedRpsNewMove(playerNumber) {
     return {
-      title: 'Rock Paper Scissors',
-      description: `Player ${
+      title: `${
         playerNumber === 1 ? this.userObj.username : this.userObj2.username
       } made it's choice!`,
-      color: 15512290,
+      description: null,
+      // color: 15512290,
+      color: 16768820,
     };
   }
   embedRpsResult(player1Move, player2Move, GameEndBoolean) {
@@ -357,25 +354,25 @@ class RpsMatch {
     function winnercolor(winner_number) {
       switch (winner_number) {
         case 0:
-          return 16580521;
+          return 16768820;
         case 1:
-          return 10266879;
+          return 5462783;
         case 2:
-          return 16737123;
+          return 16718664;
       }
     }
 
     return {
-      title: 'Rock Paper Scissors',
-      description: `${this.userObj.username} chose ${numberToMove(
-        player1Move
-      )}! ${this.userObj2.username} chose ${numberToMove(player2Move)}!\n${
+      title: `${
         winner !== 0
           ? `The winner is ${
               winner === 1 ? this.userObj.username : this.userObj2.username
             }!`
           : "It's a draw!"
       }`,
+      description: `${this.userObj.username} chose ${numberToMove(
+        player1Move
+      )}! ${this.userObj2.username} chose ${numberToMove(player2Move)}!\n`,
       color: winnercolor(winner),
     };
   }
@@ -527,10 +524,26 @@ class RpsMatch {
           // await i.update({ content: `We have a winner! Player ${winner}!` });
           // DANGEROUS CHANGE
           // await i.deferUpdate();
-          await i.channel.send(`We have a winner! Player ${this.winner}!`);
+          if (
+            !(this.winner === 2 && this.userObj2.id === this.client_user.id)
+          ) {
+            await i.channel.send(
+              await profilesTracker.cache.rewardGameWin(
+                this.winner === 1 ? this.userObj : this.userObj2,
+                0,
+                true
+              )
+            );
+          } else {
+            // DANGEROUS CHANGE 2!!
+            // nothing
+          }
+
           // await i.channel.send('The match has finished!');
         } else {
-          await i.channel.send('It was a draw! One more turn!!!');
+          // DANGEROUS CHANGE 2!!
+          // nothing // i.deferUpdate();
+          // await i.channel.send('It was a draw! One more turn!!!');
 
           // wait 2 second
           await new Promise((resolve) => setTimeout(resolve, 2000));

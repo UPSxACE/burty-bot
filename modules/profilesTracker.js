@@ -1,5 +1,6 @@
 const profilesSchema = require('../schema/profiles-schema');
 const maxXpPerLevel = 200;
+const gameXpReward = 50;
 
 function timeLeftForDaily(timestampMs) {
   const dayMlSeconds = 24 * 60 * 60 * 1000;
@@ -27,6 +28,71 @@ function timeLeftForDaily(timestampMs) {
   // console.log(dateMs.getTime());
 
   return formattedTime;
+}
+
+// Be careful because you can't add anything to null values
+async function sumToUser(userId, addFieldsQueryObject) {
+  profilesSchema.aggregate([
+    {
+      $match: {
+        _id: String(userId),
+      },
+    },
+    // project applies changes to all the results
+    {
+      $addFields: addFieldsQueryObject,
+    },
+  ]);
+}
+
+// returns rewardAmmount if it succeeds, or false if it fails
+async function rewardGameWin(userId, gameId, againstAiBoolean) {
+  let rewardAmmount = null;
+
+  try {
+    if (!cache[userId]) {
+      // if it exists, find by memberId
+      await profilesSchema.findOneAndUpdate(
+        {
+          _id: userId,
+        },
+        // if it doesn't exist create one, if it exists update with the new configs
+        { _id: userId },
+        // (mongoose settings to make it either update or insert)
+        {
+          upsert: true,
+        }
+      );
+
+      // Updated cached data with new values
+      cache[userId] = await profilesSchema.findOne({ _id: userId });
+    }
+
+    switch (gameId) {
+      // rps
+      case 0:
+        if (againstAiBoolean) {
+          rewardAmmount = Math.floor(Math.random() * 21) + 15;
+        } else {
+          console.log("Can't reward battles against real players yet");
+        }
+    }
+
+    await sumToUser({
+      coins: { $ifNull: [{ $add: ['$coins', rewardAmmount] }, rewardAmmount] },
+    });
+
+    // update profile on data again with new data
+    cache[userId] = await profilesSchema.findOne({ _id: userId });
+
+    await rewardMemberXPAP(userId, gameXpReward, gameXpReward);
+
+    return rewardAmmount;
+  } catch (err) {
+    console.log('Error CODE 9023');
+    console.log(err);
+    return false;
+  }
 }
 
 function rewardDaily(userObject, streakLevel) {
@@ -357,9 +423,16 @@ const cache = {
     return daily_reward_message;
   },
 
-  async rewardGameWin(userId, gameId) {
-    const reward_win_message = await rewardWin(userId, gameId);
-    return reward_win_message;
+  async rewardGameWin(userObj, gameId, againstAiBoolean) {
+    const userId = userObj.id;
+    const username = userObj.username;
+    const rewardAmmount = await rewardGameWin(userId, gameId, againstAiBoolean);
+
+    if (rewardAmmount) {
+      return `Congratulations ${username}! You've earned ${rewardAmmount} coins, and ${gameXpReward} XP!`;
+    } else {
+      return 'There was an error rewarding that user! Please contact the bot owner!';
+    }
   },
 };
 

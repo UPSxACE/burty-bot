@@ -65,7 +65,7 @@ const buildCollector = (
       await collectors[challengerId].stop();
       collectors[challengerId] = null;
       await effect('pvp', interaction, userObj, challengedPersonObj);
-      console.log('after effect');
+      // console.log('after effect');
     } else if (i.customId === 'decline' + challengedPersonId) {
       i.reply('Challenge declined!');
       await collectors[challengerId].stop();
@@ -74,7 +74,7 @@ const buildCollector = (
   });
 
   collectors[challengerId].on('end', async (collected) => {
-    console.log('right one end called');
+    // console.log('right one end called');
     const last = collected.last();
     if (last && last.customId === 'accept' + challengedPersonId) {
       if (interaction.type === 0) {

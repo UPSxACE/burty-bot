@@ -8,7 +8,7 @@ const profilesSchema = new mongoose.Schema({
   activityPoints: { type: Number },
   lastDailyClaimedMlSec: { type: Number },
   streakLevel: { type: Number },
-  coins: { type: Number },
+  coins: { type: Number, min: 0 },
   customUsername: { type: String },
   aboutMe: { type: String },
   currentTitle: { type: String },
