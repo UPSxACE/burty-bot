@@ -59,7 +59,9 @@ module.exports = {
             attachments: [],
           });
         } catch (err) {
-          const targetuser = await message.client.users.fetch(content[1]);
+          const targetuser = await message.client.users.fetch(
+            transformMention(content[1])
+          );
           const term = 'anime kiss';
           await message.reply({
             content: null,
