@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
 const profilesSchema = new mongoose.Schema({
+  // _id = user ID
   _id: { type: String },
   level: { type: Number },
   currentXP: { type: Number },
@@ -12,14 +13,14 @@ const profilesSchema = new mongoose.Schema({
   customUsername: { type: String },
   aboutMe: { type: String },
   currentTitle: { type: String },
-  availableTitles: [String],
-  inventory: [Object],
+  availableTitles: { type: [String] },
+  inventory: { type: [Object] },
   // inviter: {%serverID%: %inviterID%}
-  inviter: Object,
-  inviteCountGlobal: Number,
+  inviter: { type: Object },
+  inviteCountGlobal: { type: Number },
   // Server ID = 012
   // inviteCountServer: {012 : { count: 123, invitedPeople:[123,152,155]}, ...} }
-  inviteCountServer: Object,
+  inviteCountServer: { type: Object },
 });
 
 module.exports = mongoose.model('profiles', profilesSchema, 'profiles');
