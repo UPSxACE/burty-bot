@@ -90,6 +90,7 @@ class RpsMatch {
                   ),
                 ],
                 components: [this.row(userObj.id)],
+                fetchReply: true,
               })
             ).id;
             this.fetchedMessage = await repliableObj.channel.messages.fetch(
