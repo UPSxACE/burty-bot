@@ -1,4 +1,5 @@
 const { SlashCommandBuilder } = require('discord.js');
+const reactionsTracker = require('../schema/reactionsTracker-schema');
 
 async function effect(repliableObj, reward_type, messages_limit, reward_value) {
   /*
@@ -11,6 +12,40 @@ async function effect(repliableObj, reward_type, messages_limit, reward_value) {
   },
   */
 
+  let reactionsTrackerObject = await reactionsTracker.findOneAndUpdate(
+    // if it exists, find by memberId
+    {
+      _id: repliableObj.guild.id,
+    },
+    // if it doesn't exist create one, if it exists update with the new configs
+    { _id: repliableObj.guild.id },
+    // (mongoose settings to make it either update or insert)
+    {
+      upsert: true,
+    }
+  );
+  if (!reactionsTrackerObject) {
+    reactionsTrackerObject = await reactionsTracker.findOne(
+      // if it exists, find by memberId
+      {
+        _id: repliableObj.guild.id,
+      }
+    );
+  }
+
+  let currentChannelReactTracker = reactionsTrackerObject['trackedChannels']
+    ? reactionsTrackerObject
+    : { trackedChannels: {} };
+  currentChannelReactTracker = currentChannelReactTracker['trackedChannels'][
+    repliableObj.channel.id
+  ]
+    ? currentChannelReactTracker['trackedChannels'][repliableObj.channel.id]
+    : {};
+
+  currentChannelReactTracker = new Map(
+    Object.entries(currentChannelReactTracker)
+  );
+
   // Fetch messages
   const fetchedMessages = await repliableObj.channel.messages.fetch({
     limit: messages_limit,
@@ -18,23 +53,34 @@ async function effect(repliableObj, reward_type, messages_limit, reward_value) {
 
   // Create object that will store tracked messages, and their rewards´
   // key: message_id, value: map of userIds plus "reward" key
-  const rewardableMessagesObject = new Map();
+  // const rewardableMessagesObject = new Map();
 
-  // Test
-  const testMap = new Map();
-  testMap.set('reward', { coins: 10, title: 'hero' });
-  testMap.set('451074265727631361', { title: false, coins: true });
-  testMap.set('1006942483030216805', { title: true });
-  rewardableMessagesObject.set('1014627904853917768', testMap);
+  /* Test
+  currentChannelReactTracker.set('1014627904853917768', {
+    reward: { coins: 30, title: 'hero' },
+    '451074265727631361': { coins: true, title: true },
+  });
+  console.log('test4');
+  console.log(currentChannelReactTracker);
+  */
 
   // Iterate through each message
   for (const message_i of fetchedMessages) {
     // Get the id, the values from that message
     const [message_id_key, val] = message_i;
     // Create a new map for that message, or get one that already exists, and then store in that variable
-    const message_map = rewardableMessagesObject.get(message_id_key)
-      ? rewardableMessagesObject.get(message_id_key)
-      : new Map();
+    let message_map = currentChannelReactTracker.get(message_id_key)
+      ? currentChannelReactTracker.get(message_id_key)
+      : {};
+
+    let old_map = currentChannelReactTracker.get(message_id_key)
+      ? currentChannelReactTracker.get(message_id_key)
+      : {};
+
+    // console.log('POG: ' + JSON.stringify(old_map));
+
+    message_map = new Map(Object.entries(message_map));
+    old_map = new Map(Object.entries(old_map));
 
     // Object with the rewards to update:
     const helperObj = {};
@@ -71,10 +117,10 @@ async function effect(repliableObj, reward_type, messages_limit, reward_value) {
       // Iterate through each ID in the Set of user IDs
       for (const userID of userSet) {
         // Variable that will store the new values of the reward checks
-        const newRewardChecks = rewardableMessagesObject.get(message_id_key)
+        const newRewardChecks = currentChannelReactTracker.get(message_id_key)
           ? {
               ...message_map.get(userID),
-              ...rewardableMessagesObject.get(message_id_key).get(userID),
+              ...old_map.get(userID),
             }
           : {
               ...message_map.get(userID),
@@ -92,10 +138,27 @@ async function effect(repliableObj, reward_type, messages_limit, reward_value) {
 
     // If message_map has more than just "reward", store it
     message_map.size > 1 &&
-      rewardableMessagesObject.set(String(message_id_key), message_map);
+      currentChannelReactTracker.set(String(message_id_key), message_map);
   }
-  // console.log(dataArray);
-  console.log(rewardableMessagesObject);
+
+  reactionsTrackerObject['trackedChannels'] = {};
+  reactionsTrackerObject['trackedChannels'][repliableObj.channel.id] =
+    currentChannelReactTracker;
+
+  // console.log(reactionsTrackerObject);
+
+  await reactionsTracker.findOneAndUpdate(
+    // if it exists, find by memberId
+    {
+      _id: repliableObj.guild.id,
+    },
+    // if it doesn't exist create one, if it exists update with the new configs
+    reactionsTrackerObject,
+    // (mongoose settings to make it either update or insert)
+    {
+      upsert: true,
+    }
+  );
 
   return;
 }
