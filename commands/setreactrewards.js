@@ -1,5 +1,6 @@
-const { SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder, Role } = require('discord.js');
 const reactionsTracker = require('../schema/reactionsTracker-schema');
+const transformMention = require('../utils/transformMention');
 
 async function effect(repliableObj, reward_type, messages_limit, reward_value) {
   /*
@@ -136,9 +137,9 @@ async function effect(repliableObj, reward_type, messages_limit, reward_value) {
       }
     }
 
-    // If message_map has more than just "reward", store it
-    message_map.size > 1 &&
-      currentChannelReactTracker.set(String(message_id_key), message_map);
+    // (abandoned) If message_map has more than just "reward", store it
+    // message_map.size > 1 &&
+    currentChannelReactTracker.set(String(message_id_key), message_map);
   }
 
   reactionsTrackerObject['trackedChannels'] = {};
@@ -242,8 +243,19 @@ module.exports = {
         effect(interaction, 'coins', messages_limit, reward);
         break;
       case 'role':
+        reward = interaction.options.getMentionable('role_to_reward');
+        if (reward instanceof Role && reward.name !== '@everyone') {
+          effect(interaction, 'role_to_reward', messages_limit, reward.id);
+        } else {
+          await interaction.reply('You must select a valid role!');
+          return;
+        }
+
+        // effect(interaction, 'role_to_reward', messages_limit, reward);
         break;
       case 'title':
+        reward = interaction.options.getString('title');
+        effect(interaction, 'title', messages_limit, reward);
         break;
     }
   },
