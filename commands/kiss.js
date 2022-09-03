@@ -1,6 +1,7 @@
 const { SlashCommandBuilder } = require('discord.js');
 const gifapi = require('../modules/gifAPI.js');
 const transformMention = require('../utils/transformMention');
+
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('kiss')

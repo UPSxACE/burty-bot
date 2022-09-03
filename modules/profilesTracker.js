@@ -32,7 +32,12 @@ function timeLeftForDaily(timestampMs) {
 
 // Be careful because you can't add anything to null values
 async function sumToUser(userId, addFieldsQueryObject) {
-  profilesSchema.aggregate([
+  console.log('XXX');
+  console.log(userId);
+  console.log(addFieldsQueryObject);
+
+  /*
+  await profilesSchema.aggregate([
     {
       $match: {
         _id: String(userId),
@@ -43,6 +48,18 @@ async function sumToUser(userId, addFieldsQueryObject) {
       $addFields: addFieldsQueryObject,
     },
   ]);
+  */
+  await profilesSchema.updateOne(
+    {
+      _id: String(userId),
+    },
+    // project applies changes to all the results
+    [
+      {
+        $set: addFieldsQueryObject,
+      },
+    ]
+  );
 }
 
 // returns rewardAmmount if it succeeds, or false if it fails
@@ -78,7 +95,7 @@ async function rewardGameWin(userId, gameId, againstAiBoolean) {
         }
     }
 
-    await sumToUser({
+    await sumToUser(userId, {
       coins: { $ifNull: [{ $add: ['$coins', rewardAmmount] }, rewardAmmount] },
     });
 
@@ -433,6 +450,32 @@ const cache = {
     } else {
       return 'There was an error rewarding that user! Please contact the bot owner!';
     }
+  },
+
+  async sumCoinsToUser(userId, rewardAmmount) {
+    console.log('ZZZ');
+    console.log(userId);
+    console.log(rewardAmmount);
+    await sumToUser(userId, {
+      coins: { $ifNull: [{ $add: ['$coins', rewardAmmount] }, rewardAmmount] },
+    });
+
+    if (!cache[userId]) {
+      // if it exists, find by memberId
+      await profilesSchema.findOneAndUpdate(
+        {
+          _id: userId,
+        },
+        // if it doesn't exist create one, if it exists update with the new configs
+        { _id: userId },
+        // (mongoose settings to make it either update or insert)
+        {
+          upsert: true,
+        }
+      );
+    }
+    // Updated cached data with new values
+    cache[userId] = await profilesSchema.findOne({ _id: userId });
   },
 };
 
