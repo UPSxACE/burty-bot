@@ -2,6 +2,7 @@ const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const { usersPlaying } = require('./usersPlaying');
 const collectors = require('../modules/userCollectors');
 const { usersMatch } = require('./usersMatch');
+const checkCollectorAvailability = require('../utils/checkCollectorAvailability');
 let bot_message_id = null;
 
 const challengeAnswerRow = (challengedId) => {
@@ -61,6 +62,9 @@ const buildCollector = (
 
   collectors[challengerId].on('collect', async (i) => {
     if (i.customId === 'accept' + challengedPersonId) {
+      if (!checkCollectorAvailability(i, challengedPersonId)) {
+        return;
+      }
       // changes are here
       await collectors[challengerId].stop();
       collectors[challengerId] = null;
@@ -195,18 +199,8 @@ async function generateInvite(
       user = repliableObj.user.id;
     }
 
-    if (collectors[challengedPersonId] || usersPlaying[challengedPersonId]) {
-      repliableObj.reply('That user is currently not available for a match!');
-    } else if (collectors[user] || usersPlaying[user]) {
-      if (
-        usersMatch[challengedPersonId] &&
-        usersMatch[challengedPersonId].failMessage
-      ) {
-        repliableObj.reply(usersMatch[challengedPersonId].failMessage);
-      } else {
-        console.log('collector: ' + collectors[user]);
-        repliableObj.reply('You are currently not available for a match!');
-      }
+    if (!checkCollectorAvailability(repliableObj, user, challengedPersonId)) {
+      return;
     } else {
       bot_message_id = (
         await repliableObj.reply({
