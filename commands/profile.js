@@ -3,6 +3,7 @@ const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const profilesTracker = require('../modules/profilesTracker');
 
 const transformMention = require('../utils/transformMention');
+const checkCollectorAvailability = require('../utils/checkCollectorAvailability');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -14,6 +15,9 @@ module.exports = {
         .setDescription('The user whose profile you want to check')
     ),
   async execute(interaction) {
+    if (!checkCollectorAvailability(interaction, interaction.user.id)) {
+      return;
+    }
     const target_user = interaction.options.getUser('user');
     // If it has a target, then check that target's profile
     try {
