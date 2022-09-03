@@ -239,13 +239,28 @@ module.exports = {
     }
     switch (interaction.options.getSubcommand()) {
       case 'coins':
+        await interaction.reply({
+          content: 'Setting reaction rewards...',
+          ephemeral: true,
+        });
+
         reward = interaction.options.getInteger('coins_ammount');
-        effect(interaction, 'coins', messages_limit, reward);
+        await effect(interaction, 'coins', messages_limit, reward);
         break;
       case 'role':
+        await interaction.reply({
+          content: 'Setting reaction rewards...',
+          ephemeral: true,
+        });
+
         reward = interaction.options.getMentionable('role_to_reward');
         if (reward instanceof Role && reward.name !== '@everyone') {
-          effect(interaction, 'role_to_reward', messages_limit, reward.id);
+          await effect(
+            interaction,
+            'role_to_reward',
+            messages_limit,
+            reward.id
+          );
         } else {
           await interaction.reply('You must select a valid role!');
           return;
@@ -254,9 +269,19 @@ module.exports = {
         // effect(interaction, 'role_to_reward', messages_limit, reward);
         break;
       case 'title':
+        await interaction.reply({
+          content: 'Setting reaction rewards...',
+          ephemeral: true,
+        });
+
         reward = interaction.options.getString('title');
-        effect(interaction, 'title', messages_limit, reward);
+        await effect(interaction, 'title', messages_limit, reward);
         break;
     }
+
+    await interaction.editReply({
+      content: 'Reaction rewards configured successfully!',
+      ephemeral: true,
+    });
   },
 };

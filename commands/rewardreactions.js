@@ -1,3 +1,5 @@
+// Only ready to reward coins yet
+
 const { SlashCommandBuilder, Role } = require('discord.js');
 const profilesSchema = require('../schema/profiles-schema');
 const reactionsTracker = require('../schema/reactionsTracker-schema');
@@ -135,7 +137,7 @@ async function effect(repliableObj, messages_limit) {
           // REWARD!
           switch (ObjKeys[reward_type_var]) {
             case 'coins':
-              console.log('COINS!!!');
+              // console.log('COINS!!!');
               await profilesTracker.cache.sumCoinsToUser(userID, 10);
               break;
             default:
@@ -144,8 +146,6 @@ async function effect(repliableObj, messages_limit) {
 
           newRewardChecks[ObjKeys[reward_type_var]] = true;
         }
-        console.log('C: ');
-        console.log(newRewardChecks);
 
         // Update the user's reward checks
         message_map.set(userID, newRewardChecks);
@@ -192,8 +192,11 @@ module.exports = {
         .setRequired(true)
     ),
   async execute(interaction) {
-    await interaction.reply('Working on it');
+    await interaction.reply({
+      content: 'Rewarding reactions...',
+      ephemeral: true,
+    });
     await effect(interaction);
-    await interaction.channel.send('Yes it worked');
+    await interaction.editReply('Reactions rewarded successfully!');
   },
 };

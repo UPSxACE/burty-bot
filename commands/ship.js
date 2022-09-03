@@ -32,6 +32,10 @@ function generateTextDecoration(loveLevel, smallestName, biggestName) {
       // 76-82
       return ["Aren't they adorable!?", '😳'];
     }
+    if (loveLevel > 82 && loveLevel < 90) {
+      // 83-89
+      return ["Aren't they adorable!?", '😳'];
+    }
     if (loveLevel > 89 && loveLevel < 91) {
       // 83-90
       return ['You should start naming your first 5 kids already.', '🥰'];
@@ -161,6 +165,7 @@ async function effect(repliableObj, person1, person2) {
     num1 > num2 ? p2.username : p1.username,
     num1 > num2 ? p1.username : p2.username
   );
+  // console.log(loveLevel);
 
   // ----
 

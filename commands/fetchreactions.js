@@ -173,8 +173,14 @@ module.exports = {
         .setRequired(true)
     ),
   async execute(interaction) {
-    await interaction.reply('Working on it');
+    await interaction.reply({
+      content: 'Fetching reactions...',
+      ephemeral: true,
+    });
     await effect(interaction);
-    await interaction.channel.send('Yes it worked');
+    await interaction.editReply({
+      content: 'Reactions fetched!',
+      ephemeral: true,
+    });
   },
 };
