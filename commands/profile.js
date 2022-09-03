@@ -42,8 +42,8 @@ module.exports = {
     } else {
       try {
         await effect(message, null, message.author);
-      } catch {
-        console.log('Error CODE 9001');
+      } catch (err) {
+        console.log(err);
         message.reply("Couldn't find your profile :(");
       }
     }
@@ -230,7 +230,7 @@ async function effect(interaction, target, userArg) {
     bot_message_id = (
       await interaction.reply({
         content: null,
-        components: [row],
+        components: checkCollectorAvailability(null, userArg.id) ? [row] : [],
         embeds: [embed1],
         attachments: [],
       })
@@ -378,7 +378,7 @@ async function effect(interaction, target, userArg) {
     bot_message_id = (
       await interaction.reply({
         content: null,
-        components: [row],
+        components: checkCollectorAvailability(null, userArg.id) ? [row] : [],
         embeds: [embed1],
         attachments: [],
       })
@@ -387,55 +387,62 @@ async function effect(interaction, target, userArg) {
 
   const collectors = require('../modules/userCollectors');
 
+  /*
+  WARNING: POSSIBLY BREAKING CHANGES
   if (collectors[userArg.id]) {
     // console.log('Another collector exists');
     collectors[userArg.id].stop();
   }
+  */
 
   // `m` is a message object that will be passed through the filter function
   // const filter = (m) => m.content.includes('next');
-  const filter = (i) => {
-    // console.log('entered filter');
-    if (i.user.id !== userArg.id) {
-      i.reply(
-        `<@${i.user.id}> don't press someone's else buttons! That's rude! >:T`
+
+  if (checkCollectorAvailability(null, userArg.id)) {
+    const filter = (i) => {
+      // console.log('entered filter');
+      if (i.user.id !== userArg.id) {
+        i.reply(
+          `<@${i.user.id}> don't press someone's else buttons! That's rude! >:T`
+        );
+      }
+      return (
+        (i.customId === next && i.user.id === userArg.id) ||
+        (i.customId === prev && i.user.id === userArg.id)
       );
-    }
-    return (
-      (i.customId === next && i.user.id === userArg.id) ||
-      (i.customId === prev && i.user.id === userArg.id)
-    );
-  };
-  // const collector = interaction.channel.createMessageCollector({
-  collectors[userArg.id] = interaction.channel.createMessageComponentCollector({
-    filter,
-    time: 30000,
-  });
-
-  collectors[userArg.id].on('collect', async (i) => {
-    if (i.customId === next) {
-      row.components[1].setDisabled(true);
-      row.components[0].setDisabled(false);
-    } else {
-      row.components[0].setDisabled(true);
-      row.components[1].setDisabled(false);
-    }
-    await i.update({
-      embeds: i.customId === next ? [embed2] : [embed1],
-      components: [row],
-    });
-  });
-
-  collectors[userArg.id].on('end', async (collected) => {
-    if (interaction.type === 0) {
-      await (
-        await interaction.channel.messages.fetch(bot_message_id)
-      ).edit({
-        components: [],
+    };
+    // const collector = interaction.channel.createMessageCollector({
+    collectors[userArg.id] =
+      interaction.channel.createMessageComponentCollector({
+        filter,
+        time: 30000,
       });
-    } else {
-      await interaction.editReply({ components: [] });
-    }
-    // console.log(`Collected ${collected.size} items`);
-  });
+
+    collectors[userArg.id].on('collect', async (i) => {
+      if (i.customId === next) {
+        row.components[1].setDisabled(true);
+        row.components[0].setDisabled(false);
+      } else {
+        row.components[0].setDisabled(true);
+        row.components[1].setDisabled(false);
+      }
+      await i.update({
+        embeds: i.customId === next ? [embed2] : [embed1],
+        components: [row],
+      });
+    });
+
+    collectors[userArg.id].on('end', async (collected) => {
+      if (interaction.type === 0) {
+        await (
+          await interaction.channel.messages.fetch(bot_message_id)
+        ).edit({
+          components: [],
+        });
+      } else {
+        await interaction.editReply({ components: [] });
+      }
+      // console.log(`Collected ${collected.size} items`);
+    });
+  }
 }

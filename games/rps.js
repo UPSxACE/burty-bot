@@ -109,6 +109,9 @@ class RpsMatch {
             usersPlaying[userObj.id] = {
               matchHost: userObj.id,
             };
+            usersPlaying[userObj2.id] = {
+              matchHost: userObj2.id,
+            };
             usersMatch[userObj.id] = {
               // "game === 0" -> rock paper scissors
               game: 0,
