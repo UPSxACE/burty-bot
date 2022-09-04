@@ -3,6 +3,7 @@ const { SlashCommandBuilder } = require('discord.js');
 const transformMention = require('../utils/transformMention');
 const rps = require('../games/rps');
 const challenge = require('../modules/challenge');
+const checkCollectorAvailability = require('../utils/checkCollectorAvailability');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -26,6 +27,9 @@ module.exports = {
         )
     ),
   async execute(interaction) {
+    if (!checkCollectorAvailability(interaction, interaction.user.id)) {
+      return;
+    }
     switch (interaction.options.getSubcommand()) {
       case 'start':
         await rps('ai', interaction, interaction.user, null);
@@ -50,6 +54,9 @@ module.exports = {
     }
   },
   async executeManual(message, content) {
+    if (!checkCollectorAvailability(message, message.author.id)) {
+      return;
+    }
     switch (content[1]) {
       case 'start':
         await rps('ai', message, message.author, null);

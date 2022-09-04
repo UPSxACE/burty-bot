@@ -28,6 +28,9 @@ module.exports = {
     }
   },
   async executeManual(message, content, hasString) {
+    if (!checkCollectorAvailability(message, message.author.id)) {
+      return;
+    }
     if (content[1]) {
       try {
         await effect(message, transformMention(content[1]), message.author);
@@ -400,7 +403,10 @@ async function effect(interaction, target, userArg) {
   if (checkCollectorAvailability(null, userArg.id)) {
     const filter = (i) => {
       // console.log('entered filter');
-      if (i.user.id !== userArg.id) {
+      if (
+        (i.customId === next || i.customId === prev) &&
+        i.user.id !== userArg.id
+      ) {
         i.reply(
           `<@${i.user.id}> don't press someone's else buttons! That's rude! >:T`
         );
@@ -418,7 +424,7 @@ async function effect(interaction, target, userArg) {
       });
 
     // this collector should be destroyed anytime if needed
-    collectors[userArg.id].notImportant = true;
+    // collectors[userArg.id].notImportant = true;
 
     collectors[userArg.id].on('collect', async (i) => {
       if (i.customId === next) {

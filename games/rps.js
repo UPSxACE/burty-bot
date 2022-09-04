@@ -62,87 +62,73 @@ class RpsMatch {
     if (mode) {
       switch (mode) {
         case 'ai':
-          if (!usersPlaying[userObj.id]) {
-            usersPlaying[userObj.id] = {
-              matchHost: userObj.id,
-            };
-            usersMatch[userObj.id] = {
-              // "game === 0" -> rock paper scissors
-              game: 0,
-              bo3: false,
-              score1: 0,
-              score2: 0,
-              player1: userObj.id,
-              player2: null,
-              failMessage:
-                "You're already participating in a 'Rock Paper Scissors' match!",
-            };
-            this.currentRoundPlayer = userObj.id;
-            // As long as "repliableObj" is always a message object or an interaction object this line below will work
-            this.buildCollector(userObj, null, repliableObj);
-            this.bot_message_id = (
-              await repliableObj.reply({
-                content: 'So you dare challenging me? HA!',
-                embeds: [
-                  this.embedRpsRoundStart(
-                    userObj,
-                    repliableObj.client.user,
-                    true
-                  ),
-                ],
-                components: [this.row(userObj.id)],
-                fetchReply: true,
-              })
-            ).id;
-            this.fetchedMessage = await repliableObj.channel.messages.fetch(
-              this.bot_message_id
-            );
-          } else {
-            // (probably programmed already)
-            await repliableObj.reply(
-              usersMatch[usersPlaying[userObj.id].matchHost].failMessage
-            );
-          }
+          usersPlaying[userObj.id] = {
+            matchHost: userObj.id,
+          };
+          usersMatch[userObj.id] = {
+            // "game === 0" -> rock paper scissors
+            game: 0,
+            bo3: false,
+            score1: 0,
+            score2: 0,
+            player1: userObj.id,
+            player2: null,
+            failMessage:
+              "You're already participating in a 'Rock Paper Scissors' match!",
+          };
+          this.currentRoundPlayer = userObj.id;
+          // As long as "repliableObj" is always a message object or an interaction object this line below will work
+          this.buildCollector(userObj, null, repliableObj);
+          this.bot_message_id = (
+            await repliableObj.reply({
+              content: 'So you dare challenging me? HA!',
+              embeds: [
+                this.embedRpsRoundStart(
+                  userObj,
+                  repliableObj.client.user,
+                  true
+                ),
+              ],
+              components: [this.row(userObj.id)],
+              fetchReply: true,
+            })
+          ).id;
+          this.fetchedMessage = await repliableObj.channel.messages.fetch(
+            this.bot_message_id
+          );
 
           break;
         case 'pvp':
-          if (!usersPlaying[userObj.id]) {
-            usersPlaying[userObj.id] = {
-              matchHost: userObj.id,
-            };
-            usersPlaying[userObj2.id] = {
-              matchHost: userObj2.id,
-            };
-            usersMatch[userObj.id] = {
-              // "game === 0" -> rock paper scissors
-              game: 0,
-              bo3: false,
-              score1: 0,
-              score2: 0,
-              player1: userObj.id,
-              player2: userObj2.id,
-              failMessage:
-                "You're already participating in a 'Rock Paper Scissors' match!",
-            };
-            this.currentRoundPlayer = userObj.id;
-            // As long as "repliableObj" is always a message object or an interaction object this line below will work
-            this.buildCollector(userObj, userObj2, repliableObj);
-            this.bot_message_id = (
-              await repliableObj.reply({
-                content: 'Let the battle begin!',
-                embeds: [this.embedRpsRoundStart(userObj, userObj2, true)],
-                components: [this.row(userObj.id)],
-              })
-            ).id;
-            this.fetchedMessage = await repliableObj.channel.messages.fetch(
-              this.bot_message_id
-            );
-          } else {
-            // (probably programmed already)
-            await repliableObj.reply(
-              usersMatch[usersPlaying[userObj.id].matchHost].failMessage
-            );
-          }
+          usersPlaying[userObj.id] = {
+            matchHost: userObj.id,
+          };
+          usersPlaying[userObj2.id] = {
+            matchHost: userObj2.id,
+          };
+          usersMatch[userObj.id] = {
+            // "game === 0" -> rock paper scissors
+            game: 0,
+            bo3: false,
+            score1: 0,
+            score2: 0,
+            player1: userObj.id,
+            player2: userObj2.id,
+            failMessage:
+              "You're already participating in a 'Rock Paper Scissors' match!",
+          };
+          this.currentRoundPlayer = userObj.id;
+          // As long as "repliableObj" is always a message object or an interaction object this line below will work
+          this.buildCollector(userObj, userObj2, repliableObj);
+          this.bot_message_id = (
+            await repliableObj.reply({
+              content: 'Let the battle begin!',
+              embeds: [this.embedRpsRoundStart(userObj, userObj2, true)],
+              components: [this.row(userObj.id)],
+            })
+          ).id;
+          this.fetchedMessage = await repliableObj.channel.messages.fetch(
+            this.bot_message_id
+          );
 
           break;
         default:
