@@ -1,11 +1,11 @@
-// returns true if available, returns false. It will also send the reply.
+// Returns true if available, otherwise returns false.
+// It will also send the reply if repliableObj is given as argument.
 
 const collectors = require('../modules/userCollectors');
 const usersPlaying = require('../modules/usersPlaying');
 const usersMatch = require('../modules/usersMatch');
 
 module.exports = (repliableObj, userId, userId2) => {
-  // falta codigo para o IF ENDED, e para o IF notImportant
   if (userId2 && usersPlaying[userId2]) {
     if (repliableObj) {
       repliableObj.reply('That user is currently not available!');

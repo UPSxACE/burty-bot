@@ -49,12 +49,10 @@ module.exports = {
       interaction.reply('You cannot bet less than **100 coins**!');
       return;
     }
-    console.log(JSON.stringify(collectors[interaction.user.id]));
     switch (interaction.options.getSubcommand()) {
       case 'start':
-        console.log('START!');
+        // console.log('START!');
         if (usersPlaying[String(interaction.user.id)]) {
-          console.log('i work woah');
           // (probably programmed already)
           await interaction.reply(
             usersMatch[usersPlaying[interaction.user.id].matchHost].failMessage
@@ -62,11 +60,10 @@ module.exports = {
           return;
         }
         if (collectors[interaction.user.id]) {
-          console.log('I work');
           await interaction.reply('You are currently busy!');
           return;
         }
-        rusr(betamount, interaction, interaction.user.id);
+        rusr(betamount, interaction, interaction.user);
     }
   },
 };
