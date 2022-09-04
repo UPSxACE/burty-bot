@@ -9,6 +9,7 @@ const {
 const collectors = require('../modules/userCollectors');
 const usersPlaying = require('../modules/usersPlaying');
 const usersMatch = require('../modules/usersMatch');
+const profilesTracker = require('../modules/profilesTracker');
 const rusr = require('../games/rusr');
 
 module.exports = {
@@ -63,7 +64,16 @@ module.exports = {
           await interaction.reply('You are currently busy!');
           return;
         }
-        rusr(betamount, interaction, interaction.user);
+        if (
+          await profilesTracker.cache.subtractCoinsToUser(
+            interaction.user.id,
+            betamount
+          )
+        ) {
+          rusr(betamount, interaction, interaction.user);
+        } else {
+          await interaction.reply("You don't have enough coins!");
+        }
     }
   },
 };

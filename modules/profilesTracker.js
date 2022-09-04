@@ -74,6 +74,7 @@ async function subtractToUser(userId, field, amount) {
     },
   ]);
   */
+  let success = null;
 
   const searchQueryObj = {
     _id: String(userId),
@@ -93,11 +94,13 @@ async function subtractToUser(userId, field, amount) {
       }
     )
     .then((obj) => {
-      if (obj.modifiedCount > 1) {
-        return true;
+      if (obj.modifiedCount >= 1) {
+        success = true;
+      } else {
+        success = false;
       }
-      return false;
     });
+  return success;
 }
 
 // returns rewardAmmount if it succeeds, or false if it fails
@@ -547,9 +550,8 @@ const cache = {
         );
         // Updated cached data with new values
         cache[userId] = await profilesSchema.findOne({ _id: userId });
-
-        return true;
       }
+      return true;
     } else {
       return false;
     }
