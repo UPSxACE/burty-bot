@@ -71,13 +71,12 @@ async function effect(interaction, target, userArg) {
         .setStyle(ButtonStyle.Primary)
         .setDisabled(false)
     );
-  console.log('HEREEEEE');
+
   let target_user = null;
   if (target) {
     target_user = (await interaction.client.users.fetch(target)).id;
   }
 
-  console.log('HEREE');
   let bot_message_id = null;
 
   if (target_user) {
@@ -417,6 +416,9 @@ async function effect(interaction, target, userArg) {
         filter,
         time: 30000,
       });
+
+    // this collector should be destroyed anytime if needed
+    collectors[userArg.id].notImportant = true;
 
     collectors[userArg.id].on('collect', async (i) => {
       if (i.customId === next) {

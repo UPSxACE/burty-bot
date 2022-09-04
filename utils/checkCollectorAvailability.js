@@ -5,18 +5,53 @@ const usersPlaying = require('../modules/usersPlaying');
 const usersMatch = require('../modules/usersMatch');
 
 module.exports = (repliableObj, userId, userId2) => {
-  if (userId2 && (collectors[userId2] || usersPlaying[userId2])) {
+  // falta codigo para o IF ENDED, e para o IF notImportant
+  if (userId2 && usersPlaying[userId2]) {
     if (repliableObj) {
       repliableObj.reply('That user is currently not available!');
     }
     // ...for a match
     return false;
-  } else if (collectors[userId] || usersPlaying[userId]) {
-    if (usersMatch[userId2] && usersMatch[userId2].failMessage) {
+  } else if (userId2 && collectors[userId2]) {
+    if (
+      collectors[userId2].ended === true ||
+      collectors[userId2].notImportant === true
+    ) {
+      if (collectors[userId2].ended !== true) {
+        collectors[userId2].stop();
+      }
+      collectors[userId2] = null;
+    } else {
       if (repliableObj) {
-        repliableObj.reply(usersMatch[userId2].failMessage);
+        repliableObj.reply('That user is currently not available!');
+      }
+      // ...for a match
+      return false;
+    }
+  }
+
+  if (usersPlaying[userId]) {
+    if (usersMatch[userId] && usersMatch[userId].failMessage) {
+      if (repliableObj) {
+        repliableObj.reply(usersMatch[userId].failMessage);
       }
       return false;
+    } else {
+      if (repliableObj) {
+        repliableObj.reply(`<@${userId}>, you are currently not available!`);
+      }
+      // ...for a match
+      return false;
+    }
+  } else if (collectors[userId]) {
+    if (
+      collectors[userId].ended === true ||
+      collectors[userId].notImportant === true
+    ) {
+      if (collectors[userId].ended !== true) {
+        collectors[userId].stop();
+      }
+      collectors[userId] = null;
     } else {
       if (repliableObj) {
         repliableObj.reply(`<@${userId}>, you are currently not available!`);

@@ -32,10 +32,6 @@ function timeLeftForDaily(timestampMs) {
 
 // Be careful because you can't add anything to null values
 async function sumToUser(userId, addFieldsQueryObject) {
-  console.log('XXX');
-  console.log(userId);
-  console.log(addFieldsQueryObject);
-
   /*
   await profilesSchema.aggregate([
     {
