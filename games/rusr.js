@@ -8,6 +8,12 @@ const collectors = require('../modules/userCollectors');
 const profilesTracker = require('../modules/profilesTracker');
 const endMatch = require('../utils/endMatch');
 
+const transitionsArray = ['\\****sweats nervously***\\*'];
+
+const randomTransition = () => {
+  return transitionsArray[Math.floor(Math.random() * transitionsArray.length)];
+};
+
 class RusrMatch {
   constructor(betamount, interaction, player1obj) {
     this.bot_message_id = null;
@@ -17,6 +23,7 @@ class RusrMatch {
     this.bullets = 1;
     this.player1 = player1obj;
     this.player1id = player1obj.id;
+    this.currentRoundPlayer = player1obj.id;
 
     this.startgame();
   }
@@ -33,7 +40,7 @@ class RusrMatch {
       player1: this.player1id,
       player2: null,
       failMessage:
-        "You're already participating in a 'Rock Paper Scissors' match!",
+        "You're already participating in a 'Russian Roulette' match!",
     };
 
     this.bot_message_id = (
@@ -43,7 +50,7 @@ class RusrMatch {
           {
             title: 'Russian Roulette',
             description: `Your bet is **${this.betamount} coins!**\nThe weapon has room for 6 bullets but is only loaded with ${this.bullets}!`,
-            color: null,
+            color: 16775935,
           },
         ],
         attachments: [],
@@ -101,14 +108,63 @@ class RusrMatch {
     collectors[player1id].on('collect', async (i) => {
       switch (i.customId) {
         case 'shoot' + player1id:
+          i.deferUpdate();
+          this.fetchedMessage.edit({
+            content: null,
+            embeds: [
+              {
+                title: 'Russian Roulette',
+                description: `${
+                  this.currentRoundPlayer === this.player1id
+                    ? this.player1.username
+                    : this.player2.username
+                } pulled the trigger...`,
+                color: 16768820,
+              },
+            ],
+            attachments: [],
+            components: [],
+          });
+          // wait 2 seconds
+          await new Promise((resolve) => setTimeout(resolve, 2000));
+          this.fetchedMessage.edit({
+            content: null,
+            embeds: [
+              {
+                title: 'Russian Roulette',
+                description: `${randomTransition()}`,
+                color: 16768820,
+              },
+            ],
+            attachments: [],
+            components: [],
+          });
+          // wait 2-4 seconds
+          await new Promise((resolve) =>
+            setTimeout(resolve, Math.random() * (4000 - 2000) + 2000)
+          );
           if (Math.random() * (7 - 1) + 1 <= this.bullets) {
             this.fetchedMessage.edit({
               content: null,
               embeds: [
                 {
                   title: 'Russian Roulette',
+                  description: 'Baaaang!!!!!!! 💀',
+                  color: 16718664,
+                },
+              ],
+              attachments: [],
+              components: [],
+            });
+            // wait 2 seconds
+            await new Promise((resolve) => setTimeout(resolve, 2000));
+            this.fetchedMessage.edit({
+              content: null,
+              embeds: [
+                {
+                  title: 'Russian Roulette',
                   description: `How unlucky...\nYou died! 💀\nYou lost your** ${this.betamount} coins**!`,
-                  color: null,
+                  color: 16718664,
                 },
               ],
               attachments: [],
@@ -116,6 +172,20 @@ class RusrMatch {
             });
             endMatch(player1id);
           } else {
+            this.fetchedMessage.edit({
+              content: null,
+              embeds: [
+                {
+                  title: 'Russian Roulette',
+                  description: `... ... ...\nNothing happened!`,
+                  color: 47902,
+                },
+              ],
+              attachments: [],
+              components: [],
+            });
+            // wait 2 seconds
+            await new Promise((resolve) => setTimeout(resolve, 2000));
             switch (this.bullets) {
               case 1:
                 this.betamount = this.calculateReward(this.bullets);
@@ -147,10 +217,10 @@ class RusrMatch {
                       this.betamount
                     } coins**!\nDo you wish to continue for a ${Math.floor(
                       100 * (1 - 1 / (7 - this.bullets))
-                    )}% chance to gain ${this.calculateReward(
+                    )}% chance to gain __**${this.calculateReward(
                       this.bullets
-                    )} coins?\nYou can also give up and keep your coins!`,
-                    color: null,
+                    )}**__ coins?\nYou can also give up and keep your coins!`,
+                    color: 47902,
                   },
                 ],
                 attachments: [],
@@ -163,7 +233,7 @@ class RusrMatch {
                   {
                     title: 'Russian Roulette',
                     description: `You won!\nYou gained **${this.betamount} coins!**`,
-                    color: null,
+                    color: 47902,
                   },
                 ],
                 attachments: [],
@@ -180,7 +250,6 @@ class RusrMatch {
               );
             }
           }
-          i.deferUpdate();
           break;
         case 'giveup' + player1id:
           this.fetchedMessage.edit({
@@ -189,7 +258,7 @@ class RusrMatch {
               {
                 title: 'Russian Roulette',
                 description: `You coward!\nYou can keep the **${this.betamount} coins**!\n *Cyka Blyat!*`,
-                color: null,
+                color: 47902,
               },
             ],
             attachments: [],
