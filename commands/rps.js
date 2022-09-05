@@ -39,7 +39,7 @@ module.exports = {
           await challenge(
             0,
             interaction,
-            interaction.options.getUser('member'),
+            interaction.options.getUser('member').id,
             rps
           );
         } catch (err) {

@@ -507,7 +507,6 @@ const cache = {
     }
   },
 
-  // Returns true if it was possible to subract. Returns false if it was not possible!
   async sumCoinsToUser(userId, rewardAmmount) {
     await sumToUser(userId, {
       coins: { $ifNull: [{ $add: ['$coins', rewardAmmount] }, rewardAmmount] },
@@ -531,6 +530,7 @@ const cache = {
     cache[userId] = await profilesSchema.findOne({ _id: userId });
   },
 
+  // Returns true if it was possible to subtract. Returns false if it was not possible!
   async subtractCoinsToUser(userId, amount) {
     const successBool = await subtractToUser(userId, 'coins', amount);
 

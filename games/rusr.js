@@ -177,7 +177,7 @@ class RusrMatch {
               embeds: [
                 {
                   title: 'Russian Roulette',
-                  description: `... ... ...\nNothing happened!`,
+                  description: `............nothing happened!`,
                   color: 47902,
                 },
               ],

@@ -1,9 +1,9 @@
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const { usersPlaying } = require('./usersPlaying');
 const collectors = require('../modules/userCollectors');
+const profilesTracker = require('../modules/profilesTracker');
 const { usersMatch } = require('./usersMatch');
 const checkCollectorAvailability = require('../utils/checkCollectorAvailability');
-let bot_message_id = null;
 
 const challengeAnswerRow = (challengedId) => {
   return new ActionRowBuilder()
@@ -23,207 +23,254 @@ const challengeAnswerRow = (challengedId) => {
     );
 };
 
-const buildCollector = (
-  challengedPersonId,
-  interaction,
-  challengerId,
-  effect,
-  challengedPersonObj
-) => {
-  let userObj = null;
-  if (interaction.type === 0) {
-    userObj = interaction.author;
-  } else {
-    userObj = interaction.user;
+class Invite {
+  constructor(repliableObj, gameName, challengedPersonId, effect, betamount) {
+    this.interaction = repliableObj;
+    this.repliableObj = repliableObj;
+    this.gameName = gameName;
+    this.challengedPersonId = challengedPersonId;
+    this.effect = effect;
+    this.betamount = betamount;
+    this.bot_message_id = null;
+    this.replied = false;
+    if (repliableObj.type === 0) {
+      this.challengerId = repliableObj.author.id;
+    } else {
+      this.challengerId = repliableObj.user.id;
+    }
+
+    this.generateInvite();
   }
 
-  // `m` is a message object that will be passed through the filter function
-  // const filter = (m) => m.content.includes('next');
-  const filter = (i) => {
-    // console.log('entered filter');
-    if (i.user.id !== challengedPersonId) {
-      i.reply(
-        `<@${i.user.id}> don't press someone's else buttons! That's rude! >:T`
-      );
-    }
-    return (
-      i.user.id === challengedPersonId &&
-      (i.customId === 'accept' + challengedPersonId ||
-        i.customId === 'decline' + challengedPersonId)
+  async generateInvite() {
+    this.challengedPerson = await this.repliableObj.client.users.fetch(
+      this.challengedPersonId
     );
-  };
-  // const collector = interaction.channel.createMessageCollector({
-  collectors[challengerId] =
-    interaction.channel.createMessageComponentCollector({
-      filter,
-      time: 30000,
-      // 30 seconds
+
+    if (this.challengedPerson.bot) {
+      this.repliableObj.reply("You can't challenge a bot!");
+    } else {
+      let user = null;
+      if (this.repliableObj.type === 0) {
+        user = this.repliableObj.author.id;
+      } else {
+        user = this.repliableObj.user.id;
+      }
+
+      if (
+        !checkCollectorAvailability(
+          this.repliableObj,
+          user,
+          this.challengedPersonId
+        )
+      ) {
+        return;
+      } else {
+        this.bot_message_id = (
+          await this.repliableObj.reply({
+            // content: `<@${user}> invited you, <@${this.challengedPerson.id}>, for a ${gameName} match!`,
+            embeds: [
+              {
+                title: `${this.gameName} challenge!`,
+                description: `<@${user}> invited you, <@${this.challengedPerson.id}>, for a ${this.gameName} match!`,
+                color: 15512290,
+              },
+            ],
+            components: [challengeAnswerRow(this.challengedPersonId)],
+          })
+        ).id;
+
+        this.buildCollector(
+          this.challengedPersonId,
+          this.repliableObj,
+          this.user,
+          this.effect,
+          this.challengedPerson,
+          this.betamount
+        );
+      }
+    }
+  }
+
+  buildCollector() {
+    let userObj = null;
+    if (this.interaction.type === 0) {
+      userObj = this.interaction.author;
+    } else {
+      userObj = this.interaction.user;
+    }
+
+    // `m` is a message object that will be passed through the filter function
+    // const filter = (m) => m.content.includes('next');
+    const filter = (i) => {
+      // console.log('entered filter');
+      if (i.user.id !== this.challengedPersonId) {
+        i.reply(
+          `<@${i.user.id}> don't press someone's else buttons! That's rude! >:T`
+        );
+      }
+      return (
+        i.user.id === this.challengedPersonId &&
+        (i.customId === 'accept' + this.challengedPersonId ||
+          i.customId === 'decline' + this.challengedPersonId)
+      );
+    };
+    // const collector = interaction.channel.createMessageCollector({
+    collectors[this.challengerId] =
+      this.interaction.channel.createMessageComponentCollector({
+        filter,
+        time: 30000,
+        // 30 seconds
+      });
+
+    collectors[this.challengerId].on('collect', async (i) => {
+      if (i.customId === 'accept' + this.challengedPersonId) {
+        if (!checkCollectorAvailability(i, this.challengedPersonId)) {
+          return;
+        }
+        if (
+          !this.betamount ||
+          (await profilesTracker.cache.subtractCoinsToUser(
+            this.challengedPersonId,
+            this.betamount
+          ))
+        ) {
+          this.replied = true;
+          // changes are here
+          await collectors[this.challengerId].stop();
+          collectors[this.challengerId] = null;
+          if (this.interaction.type === 0) {
+            await (
+              await this.interaction.channel.messages.fetch(this.bot_message_id)
+            ).edit({
+              embeds: [
+                {
+                  title: 'Offer accepted!',
+                  description:
+                    'Ready or not, here we go. Your battle will be legendary!',
+                  color: 4437377,
+                },
+              ],
+              components: [],
+            });
+          } else {
+            // this one still not coded & prevent invite himself
+            await this.interaction.editReply({
+              embeds: [
+                {
+                  title: 'Offer accepted!',
+                  description:
+                    'Ready or not, here we go. Your battle will be legendary!',
+                  color: 4437377,
+                },
+              ],
+              components: [],
+            });
+
+            // collectors[challengerId].stop();
+            // collectors[challengerId] = null;
+          }
+          await this.effect(
+            'pvp',
+            this.interaction,
+            userObj,
+            this.challengedPersonObj
+          );
+        } else {
+          i.reply(
+            `<@${this.challengedPersonId}>, you don't have enough coins!`
+          );
+        }
+        // console.log('after effect');
+      } else if (i.customId === 'decline' + this.challengedPersonId) {
+        this.replied = true;
+        await profilesTracker.cache.sumCoinsToUser(
+          this.challengerId,
+          this.betamount
+        );
+        await collectors[this.challengerId].stop();
+        collectors[this.challengerId] = null;
+        if (this.interaction.type === 0) {
+          await (
+            await this.interaction.channel.messages.fetch(this.bot_message_id)
+          ).edit({
+            embeds: [
+              {
+                title: 'Offer declined!',
+                description:
+                  "Try looking for someone else, because that one doesn't have the guts needed >:)",
+                color: 15746887,
+              },
+            ],
+            components: [],
+          });
+        } else {
+          // this one still not coded & prevent invite himself
+          await this.interaction.editReply({
+            embeds: [
+              {
+                title: 'Offer declined!',
+                description:
+                  "Try looking for someone else, because that one doesn't have the guts needed >:)",
+                color: 15746887,
+              },
+            ],
+            components: [],
+          });
+
+          // collectors[challengerId].stop();
+          // collectors[challengerId] = null;
+        }
+        await i.reply('Challenge declined!');
+      }
     });
 
-  collectors[challengerId].on('collect', async (i) => {
-    if (i.customId === 'accept' + challengedPersonId) {
-      if (!checkCollectorAvailability(i, challengedPersonId)) {
-        return;
+    collectors[this.challengerId].on('end', async (collected) => {
+      // console.log('right one end called');
+
+      if (!this.replied) {
+        if (this.interaction.type === 0) {
+          await profilesTracker.cache.sumCoinsToUser(
+            this.challengerId,
+            this.betamount
+          );
+          await (
+            await this.interaction.channel.messages.fetch(this.bot_message_id)
+          ).edit({
+            embeds: [
+              {
+                title: 'Offer expired!',
+                description:
+                  "Try looking for someone else, because that one doesn't have the guts needed >:)",
+                color: 15746887,
+              },
+            ],
+            components: [],
+          });
+          collectors[this.challengerId] = null;
+        } else {
+          await profilesTracker.cache.sumCoinsToUser(
+            this.challengerId,
+            this.betamount
+          );
+          // this one still not coded & prevent invite himself
+          await this.interaction.editReply({
+            embeds: [
+              {
+                title: 'Offer expired!',
+                description:
+                  "Try looking for someone else, because that one doesn't have the guts needed >:)",
+                color: 15746887,
+              },
+            ],
+            components: [],
+          });
+
+          // collectors[challengerId].stop();
+          // collectors[challengerId] = null;
+        }
       }
-      // changes are here
-      await collectors[challengerId].stop();
-      collectors[challengerId] = null;
-      await effect('pvp', interaction, userObj, challengedPersonObj);
-      // console.log('after effect');
-    } else if (i.customId === 'decline' + challengedPersonId) {
-      i.reply('Challenge declined!');
-      await collectors[challengerId].stop();
-      collectors[challengerId] = null;
-    }
-  });
-
-  collectors[challengerId].on('end', async (collected) => {
-    // console.log('right one end called');
-    const last = collected.last();
-    if (last && last.customId === 'accept' + challengedPersonId) {
-      if (interaction.type === 0) {
-        await (
-          await interaction.channel.messages.fetch(bot_message_id)
-        ).edit({
-          embeds: [
-            {
-              title: 'Offer accepted!',
-              description:
-                'Ready or not, here we go. Your battle will be legendary!',
-              color: 4437377,
-            },
-          ],
-          components: [],
-        });
-      } else {
-        // this one still not coded & prevent invite himself
-        await interaction.editReply({
-          embeds: [
-            {
-              title: 'Offer accepted!',
-              description:
-                'Ready or not, here we go. Your battle will be legendary!',
-              color: 4437377,
-            },
-          ],
-          components: [],
-        });
-
-        // collectors[challengerId].stop();
-        // collectors[challengerId] = null;
-      }
-    } else if (last && last.customId === 'decline' + challengedPersonId) {
-      if (interaction.type === 0) {
-        await (
-          await interaction.channel.messages.fetch(bot_message_id)
-        ).edit({
-          embeds: [
-            {
-              title: 'Offer declined!',
-              description:
-                "Try looking for someone else, because that one doesn't have the guts needed >:)",
-              color: 15746887,
-            },
-          ],
-          components: [],
-        });
-      } else {
-        // this one still not coded & prevent invite himself
-        await interaction.editReply({
-          embeds: [
-            {
-              title: 'Offer declined!',
-              description:
-                "Try looking for someone else, because that one doesn't have the guts needed >:)",
-              color: 15746887,
-            },
-          ],
-          components: [],
-        });
-
-        // collectors[challengerId].stop();
-        // collectors[challengerId] = null;
-      }
-    } else if (interaction.type === 0) {
-      await (
-        await interaction.channel.messages.fetch(bot_message_id)
-      ).edit({
-        embeds: [
-          {
-            title: 'Offer expired!',
-            description:
-              "Try looking for someone else, because that one doesn't have the guts needed >:)",
-            color: 15746887,
-          },
-        ],
-        components: [],
-      });
-      collectors[challengerId] = null;
-    } else {
-      // this one still not coded & prevent invite himself
-      await interaction.editReply({
-        embeds: [
-          {
-            title: 'Offer expired!',
-            description:
-              "Try looking for someone else, because that one doesn't have the guts needed >:)",
-            color: 15746887,
-          },
-        ],
-        components: [],
-      });
-
-      // collectors[challengerId].stop();
-      // collectors[challengerId] = null;
-    }
-  });
-};
-
-async function generateInvite(
-  repliableObj,
-  gameName,
-  challengedPersonId,
-  effect
-) {
-  const challengedPerson = await repliableObj.client.users.fetch(
-    challengedPersonId
-  );
-
-  if (challengedPerson.bot) {
-    repliableObj.reply("You can't challenge a bot!");
-  } else {
-    let user = null;
-    if (repliableObj.type === 0) {
-      user = repliableObj.author.id;
-    } else {
-      user = repliableObj.user.id;
-    }
-
-    if (!checkCollectorAvailability(repliableObj, user, challengedPersonId)) {
-      return;
-    } else {
-      bot_message_id = (
-        await repliableObj.reply({
-          // content: `<@${user}> invited you, <@${challengedPerson.id}>, for a ${gameName} match!`,
-          embeds: [
-            {
-              title: `${gameName} challenge!`,
-              description: `<@${user}> invited you, <@${challengedPerson.id}>, for a ${gameName} match!`,
-              color: 15512290,
-            },
-          ],
-          components: [challengeAnswerRow(challengedPersonId)],
-        })
-      ).id;
-
-      buildCollector(
-        challengedPersonId,
-        repliableObj,
-        user,
-        effect,
-        challengedPerson
-      );
-    }
+    });
   }
 }
 
@@ -231,8 +278,10 @@ module.exports = async (
   gameId,
   repliableObj,
   challengedPersonId,
-  effectFunction
+  effectFunction,
+  betamount
 ) => {
+  let inv = {};
   let userId = null;
   if (repliableObj.type === 0) {
     userId = repliableObj.author.id;
@@ -244,12 +293,23 @@ module.exports = async (
     repliableObj.reply("You can't challenge yourself!");
   } else {
     switch (gameId) {
+      // Rps
       case 0:
-        await generateInvite(
+        inv = new Invite(
           repliableObj,
           'Rock Paper Scissors',
           challengedPersonId,
           effectFunction
+        );
+        break;
+      // Rusr
+      case 1:
+        inv = new Invite(
+          repliableObj,
+          'Russian Roulette',
+          challengedPersonId,
+          effectFunction,
+          betamount
         );
         break;
       default:

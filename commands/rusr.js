@@ -11,6 +11,8 @@ const usersPlaying = require('../modules/usersPlaying');
 const usersMatch = require('../modules/usersMatch');
 const profilesTracker = require('../modules/profilesTracker');
 const rusr = require('../games/rusr');
+const checkCollectorAvailability = require('../utils/checkCollectorAvailability');
+const challenge = require('../modules/challenge');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -50,18 +52,11 @@ module.exports = {
       interaction.reply('You cannot bet less than **100 coins**!');
       return;
     }
+
+    const challengedUserId = interaction.options.getMember('member').id;
     switch (interaction.options.getSubcommand()) {
       case 'start':
-        // console.log('START!');
-        if (usersPlaying[String(interaction.user.id)]) {
-          // (probably programmed already)
-          await interaction.reply(
-            usersMatch[usersPlaying[interaction.user.id].matchHost].failMessage
-          );
-          return;
-        }
-        if (collectors[interaction.user.id]) {
-          await interaction.reply('You are currently busy!');
+        if (!checkCollectorAvailability(interaction, interaction.user.id)) {
           return;
         }
         if (
@@ -71,6 +66,37 @@ module.exports = {
           )
         ) {
           rusr(betamount, interaction, interaction.user);
+        } else {
+          await interaction.reply("You don't have enough coins!");
+        }
+        break;
+      case 'challenge':
+        if (!checkCollectorAvailability(interaction, interaction.user.id)) {
+          return;
+        }
+        if (
+          await profilesTracker.cache.subtractCoinsToUser(
+            interaction.user.id,
+            betamount
+          )
+        ) {
+          try {
+            await challenge(1, interaction, challengedUserId, rusr, betamount);
+          } catch (err) {
+            try {
+              await challenge(
+                1,
+                interaction,
+                challengedUserId,
+                rusr,
+                betamount
+              );
+            } catch (err) {
+              console.log('Error CODE 9024');
+              interaction.reply("Couldn't find such user :(");
+            }
+          }
+          // rusr(betamount, interaction, interaction.user);
         } else {
           await interaction.reply("You don't have enough coins!");
         }
