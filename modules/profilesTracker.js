@@ -132,11 +132,12 @@ async function rewardGameWin(userId, gameId, againstAiBoolean, value1) {
         if (againstAiBoolean) {
           rewardAmmount = Math.floor(Math.random() * 21) + 15;
         } else {
-          console.log("Can't reward battles against real players yet");
+          rewardAmmount = value1;
         }
         break;
       // rps
       case 1:
+        // sadly, even on pvp, this is set to True in rusr
         if (againstAiBoolean) {
           rewardAmmount = value1;
         } else {

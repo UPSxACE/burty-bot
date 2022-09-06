@@ -181,7 +181,13 @@ class Invite {
           switch (this.gameId) {
             // rps
             case 0:
-              await this.effect('pvp', i, userObj, this.challengedPerson);
+              await this.effect(
+                'pvp',
+                i,
+                userObj,
+                this.challengedPerson,
+                this.betamount
+              );
               break;
             // rusr
             case 1:
@@ -323,7 +329,8 @@ module.exports = async (
           repliableObj,
           'Rock Paper Scissors',
           challengedPersonId,
-          effectFunction
+          effectFunction,
+          betamount
         );
         break;
       // Rusr

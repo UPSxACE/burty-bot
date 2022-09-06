@@ -13,6 +13,27 @@ const transitionsArray = ['\\****sweats nervously***\\*'];
 const randomTransition = () => {
   return transitionsArray[Math.floor(Math.random() * transitionsArray.length)];
 };
+const embedHelp = {
+  title: 'Russian Roulette',
+  description:
+    'Russian Roulette is a lethal game in which a single bullet is put in a 6 bullet revolver.\nAfter it, the gun cylinder is spin, the gun is pointed to your head, the bets are placed, and then you pull the trigger!\n**If you have the guts for it!**\n\nAs long as you stay alive, you can keep playing for higher stakes, but the chances of surviving get lower each round.\n\u200B',
+  color: 15512290,
+  fields: [
+    {
+      name: `\`${prefix}rusr start <coins_to_bet>\``,
+      value:
+        'Play alone. If you survive 5 rounds, you get 4x your bet! You can also quit in the middle of the match.',
+    },
+    {
+      name: `\`${prefix}rps challenge @user <coins_to_bet>\``,
+      value:
+        'Play against **someone** by turns. Whoever wants to shoot, needs to raise the bet, and whoever dies or gives up loses everything!',
+    },
+  ],
+  footer: {
+    text: `${version}`,
+  },
+};
 
 class RusrMatch {
   constructor(mode, betamount, interaction, player1obj, player2obj) {
@@ -74,7 +95,8 @@ class RusrMatch {
           this.fetchedMessage = await this.interaction.channel.messages.fetch(
             this.bot_message_id
           );
-          this.player1id = this.interaction.user.id;
+          // maybe comment line below
+          // this.player1id = this.player1.id;
           this.buildCollector(this.player1id, this.interaction);
           break;
         case 'pvp':
@@ -102,6 +124,7 @@ class RusrMatch {
       }
     } else {
       // embed help
+      this.interaction.reply({ embeds: [embedHelp] });
     }
   }
   rowRusr(player1id, notfirstround) {

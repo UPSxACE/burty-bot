@@ -43,7 +43,7 @@ module.exports = async (mode, repliableObj, userObj, userObj2) => {
 */
 
 class RpsMatch {
-  constructor(mode, repliableObj, userObj, userObj2) {
+  constructor(mode, repliableObj, userObj, userObj2, betamount) {
     this.currentRoundPlayer = null;
     this.matchEndBool = false;
     this.bot_message_id = null;
@@ -54,6 +54,7 @@ class RpsMatch {
     this.userObj = userObj;
     this.userObj2 = userObj2 ? userObj2 : repliableObj.client.user;
     this.client_user = repliableObj.client.user;
+    this.betamount = Number(betamount) > 0 ? betamount : null;
 
     this.effect(mode, repliableObj, userObj, userObj2);
   }
@@ -456,9 +457,6 @@ class RpsMatch {
                 true
               )
             );
-          } else {
-            // DANGEROUS CHANGE 2!!
-            // nothing
           }
 
           // await i.channel.send('The match has finished!');
@@ -625,6 +623,28 @@ class RpsMatch {
           // await i.deferUpdate();
           await i.channel.send(`We have a winner! Player ${this.winner}!`);
           // await i.channel.send('The match has finished!');
+          if (this.betamount) {
+            if (this.winner === 1) {
+              await i.channel.send(
+                await profilesTracker.cache.rewardGameWin(
+                  this.userObj,
+                  0,
+                  false,
+                  this.betamount * 2
+                )
+              );
+            }
+            if (this.winner === 2) {
+              await i.channel.send(
+                await profilesTracker.cache.rewardGameWin(
+                  this.userObj2,
+                  0,
+                  false,
+                  this.betamount * 2
+                )
+              );
+            }
+          }
         } else {
           if (this.turnMovesCount === 0) {
             await i.channel.send('It was a draw! One more turn!!!');
@@ -723,6 +743,6 @@ class RpsMatch {
   }
 }
 
-module.exports = (mode, repliableObj, userObj, userObj2) => {
-  new RpsMatch(mode, repliableObj, userObj, userObj2);
+module.exports = (mode, repliableObj, userObj, userObj2, betamount) => {
+  new RpsMatch(mode, repliableObj, userObj, userObj2, betamount);
 };
