@@ -124,6 +124,7 @@ class RpsMatch {
               content: 'Let the battle begin!',
               embeds: [this.embedRpsRoundStart(userObj, userObj2, true)],
               components: [this.row(userObj.id)],
+              fetchReply: true,
             })
           ).id;
           this.fetchedMessage = await repliableObj.channel.messages.fetch(

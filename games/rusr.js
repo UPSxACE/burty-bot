@@ -15,54 +15,94 @@ const randomTransition = () => {
 };
 
 class RusrMatch {
-  constructor(betamount, interaction, player1obj) {
+  constructor(mode, betamount, interaction, player1obj, player2obj) {
+    this.mode = mode;
     this.bot_message_id = null;
     this.fetchedMessage = null;
     this.interaction = interaction;
-    this.betamount = betamount;
+    this.betamount = mode === 'pvp' ? betamount * 2 : betamount;
     this.bullets = 1;
     this.player1 = player1obj;
     this.player1id = player1obj.id;
+    this.player2 = player2obj ? player2obj : null;
+    this.player2id = player2obj ? player2obj.id : null;
     this.currentRoundPlayer = player1obj.id;
+    this.roundCost = mode === 'pvp' ? Math.floor(betamount / 2) : 0;
 
     this.startgame();
   }
   async startgame() {
-    usersPlaying[this.player1id] = {
-      matchHost: this.player1id,
-    };
-    usersMatch[this.player1id] = {
-      // "game === 0" -> rock paper scissors
-      game: 0,
-      bo3: false,
-      score1: 0,
-      score2: 0,
-      player1: this.player1id,
-      player2: null,
-      failMessage:
-        "You're already participating in a 'Russian Roulette' match!",
-    };
+    if (this.mode) {
+      usersPlaying[this.player1id] = {
+        matchHost: this.player1id,
+      };
+      if (this.mode === 'pvp') {
+        usersPlaying[this.player2id] = {
+          matchHost: this.player2id,
+        };
+      }
 
-    this.bot_message_id = (
-      await this.interaction.reply({
-        content: null,
-        embeds: [
-          {
-            title: 'Russian Roulette',
-            description: `Your bet is **${this.betamount} coins!**\nThe weapon has room for 6 bullets but is only loaded with ${this.bullets}!`,
-            color: 16775935,
-          },
-        ],
-        attachments: [],
-        components: [this.rowRusr(this.interaction.user.id)],
-        fetchReply: true,
-      })
-    ).id;
-    this.fetchedMessage = await this.interaction.channel.messages.fetch(
-      this.bot_message_id
-    );
-    this.player1id = this.interaction.user.id;
-    this.buildCollector(this.player1id, this.interaction);
+      usersMatch[this.player1id] = {
+        // "game === 0" -> rock paper scissors
+        game: 0,
+        bo3: false,
+        score1: 0,
+        score2: 0,
+        player1: this.player1id,
+        player2: this.mode === 'pvp' ? this.player2id : null,
+        failMessage:
+          "You're already participating in a 'Russian Roulette' match!",
+      };
+
+      switch (this.mode) {
+        case 'ai':
+          this.bot_message_id = (
+            await this.interaction.reply({
+              content: null,
+              embeds: [
+                {
+                  title: 'Russian Roulette',
+                  description: `Your bet is **${this.betamount} coins!**\nThe weapon has room for 6 bullets but is only loaded with ${this.bullets}!`,
+                  color: 16775935,
+                },
+              ],
+              attachments: [],
+              components: [this.rowRusr(this.player1id)],
+              fetchReply: true,
+            })
+          ).id;
+          this.fetchedMessage = await this.interaction.channel.messages.fetch(
+            this.bot_message_id
+          );
+          this.player1id = this.interaction.user.id;
+          this.buildCollector(this.player1id, this.interaction);
+          break;
+        case 'pvp':
+          this.bot_message_id = (
+            await this.interaction.reply({
+              content: null,
+              embeds: [
+                {
+                  title: 'Russian Roulette',
+                  description: `One on one! >:)\n**__${this.betamount}__** coins are at stake!\nThe weapon has room for **6** bullets but is only loaded with **${this.bullets}**!\nIf you want to shoot this round, you've gotta add **__${this.roundCost}__** to the bet!`,
+                  color: 16775935,
+                },
+              ],
+              attachments: [],
+              components: [this.rowRusr(this.player1id, true)],
+              fetchReply: true,
+            })
+          ).id;
+          this.fetchedMessage = await this.interaction.channel.messages.fetch(
+            this.bot_message_id
+          );
+          // this.player1id = this.interaction.user.id;
+          this.buildCollector(this.player1id, this.interaction, this.player2id);
+          break;
+      }
+    } else {
+      // embed help
+    }
   }
   rowRusr(player1id, notfirstround) {
     return new ActionRowBuilder()
@@ -81,16 +121,22 @@ class RusrMatch {
           .setDisabled(notfirstround ? false : true)
       );
   }
-  buildCollector(player1id, interaction) {
-    const filter = (i) => {
+  buildCollector(player1id, interaction, player2id) {
+    const filter = async (i) => {
+      // console.log(i);
       if (
         i.message &&
         i.message.id === this.bot_message_id &&
-        (i.customId === 'shoot' + this.player1id ||
-          i.customId === 'giveup' + this.player1id) &&
-        i.user.id === this.player1id
+        (i.customId === 'shoot' + player1id ||
+          i.customId === 'giveup' + player1id) &&
+        (i.user.id === player1id || i.user.id === player2id)
       ) {
-        return true;
+        if (i.user.id === this.currentRoundPlayer) {
+          return true;
+        } else {
+          await i.channel.send(`<@${i.user.id}>, it's not your turn!`);
+          return false;
+        }
       }
       return false;
     };
@@ -109,13 +155,29 @@ class RusrMatch {
       switch (i.customId) {
         case 'shoot' + player1id:
           i.deferUpdate();
+          if (this.roundCost > 0) {
+            if (
+              profilesTracker.cache.subtractCoinsToUser(
+                this.currentRoundPlayer,
+                this.roundCost
+              )
+            ) {
+              this.betamount = this.betamount + this.roundCost;
+              this.roundCost = this.roundCost * 2;
+            } else {
+              i.channel.send(
+                `<@${this.currentRoundPlayer}>, seems like you're too broke! You don't have enough coins!`
+              );
+              return;
+            }
+          }
           this.fetchedMessage.edit({
             content: null,
             embeds: [
               {
                 title: 'Russian Roulette',
                 description: `${
-                  this.currentRoundPlayer === this.player1id
+                  this.currentRoundPlayer === player1id
                     ? this.player1.username
                     : this.player2.username
                 } pulled the trigger...`,
@@ -158,18 +220,56 @@ class RusrMatch {
             });
             // wait 2 seconds
             await new Promise((resolve) => setTimeout(resolve, 2000));
-            this.fetchedMessage.edit({
-              content: null,
-              embeds: [
-                {
-                  title: 'Russian Roulette',
-                  description: `How unlucky...\nYou died! 💀\nYou lost your** ${this.betamount} coins**!`,
-                  color: 16718664,
-                },
-              ],
-              attachments: [],
-              components: [],
-            });
+            if (this.mode !== 'pvp') {
+              this.fetchedMessage.edit({
+                content: null,
+                embeds: [
+                  {
+                    title: 'Russian Roulette',
+                    description: `How unlucky...\nYou died! 💀\nYou lost your** ${this.betamount} coins**!`,
+                    color: 16718664,
+                  },
+                ],
+                attachments: [],
+                components: [],
+              });
+            } else {
+              this.fetchedMessage.edit({
+                content: null,
+                embeds: [
+                  {
+                    title: 'Russian Roulette',
+                    description: `How unlucky...\n**${
+                      this.currentRoundPlayer === player1id
+                        ? this.player1.username
+                        : this.player2.username
+                    }** died! 💀\n**${
+                      this.currentRoundPlayer === player1id
+                        ? this.player2.username
+                        : this.player1.username
+                    }** keeps the** ${this.betamount} coins**!`,
+                    color: 16718664,
+                  },
+                ],
+                attachments: [],
+                components: [],
+              });
+            }
+            await i.channel.send(
+              this.currentRoundPlayer === player1id
+                ? await profilesTracker.cache.rewardGameWin(
+                    this.player2,
+                    1,
+                    true,
+                    this.betamount
+                  )
+                : await profilesTracker.cache.rewardGameWin(
+                    this.player1,
+                    1,
+                    true,
+                    this.betamount
+                  )
+            );
             endMatch(player1id);
           } else {
             this.fetchedMessage.edit({
@@ -184,95 +284,201 @@ class RusrMatch {
               attachments: [],
               components: [],
             });
-            // wait 2 seconds
-            await new Promise((resolve) => setTimeout(resolve, 2000));
-            switch (this.bullets) {
-              case 1:
-                this.betamount = this.calculateReward(this.bullets);
-                break;
-              case 2:
-                this.betamount = this.calculateReward(this.bullets);
-                break;
-              case 3:
-                this.betamount = this.calculateReward(this.bullets);
-                break;
-              case 4:
-                this.betamount = this.calculateReward(this.bullets);
-                break;
-              case 5:
-                this.betamount = this.calculateReward(this.bullets);
-                break;
-            }
+            if (this.mode !== 'pvp') {
+              // wait 2 seconds
+              await new Promise((resolve) => setTimeout(resolve, 2000));
+              switch (this.bullets) {
+                case 1:
+                  this.betamount = this.calculateReward(this.bullets);
+                  break;
+                case 2:
+                  this.betamount = this.calculateReward(this.bullets);
+                  break;
+                case 3:
+                  this.betamount = this.calculateReward(this.bullets);
+                  break;
+                case 4:
+                  this.betamount = this.calculateReward(this.bullets);
+                  break;
+                case 5:
+                  this.betamount = this.calculateReward(this.bullets);
+                  break;
+              }
 
-            this.bullets += 1;
-            if (this.bullets !== 6) {
-              this.fetchedMessage.edit({
-                content: null,
-                embeds: [
-                  {
-                    title: 'Russian Roulette',
-                    description: `Lucky one!\nYou have ${
-                      6 - this.bullets
-                    } round(s) left!\nYou currently have **${
-                      this.betamount
-                    } coins**!\nDo you wish to continue for a ${Math.floor(
-                      100 * (1 - 1 / (7 - this.bullets))
-                    )}% chance to gain __**${this.calculateReward(
-                      this.bullets
-                    )}**__ coins?\nYou can also give up and keep your coins!`,
-                    color: 47902,
-                  },
-                ],
-                attachments: [],
-                components: [this.rowRusr(player1id, true)],
-              });
+              this.bullets += 1;
+              if (this.bullets !== 6) {
+                this.fetchedMessage.edit({
+                  content: null,
+                  embeds: [
+                    {
+                      title: 'Russian Roulette',
+                      description: `Lucky one!\nYou have ${
+                        6 - this.bullets
+                      } round(s) left!\nYou currently have **${
+                        this.betamount
+                      } coins**!\nDo you wish to continue for a ${Math.floor(
+                        100 * (1 - 1 / (7 - this.bullets))
+                      )}% chance to gain __**${this.calculateReward(
+                        this.bullets
+                      )}**__ coins?\nYou can also give up and keep your coins!`,
+                      color: 47902,
+                    },
+                  ],
+                  attachments: [],
+                  components: [this.rowRusr(player1id, true)],
+                });
+              } else {
+                this.fetchedMessage.edit({
+                  content: null,
+                  embeds: [
+                    {
+                      title: 'Russian Roulette',
+                      description: `You won!\nYou gained __**${this.betamount}**__ coins!`,
+                      color: 47902,
+                    },
+                  ],
+                  attachments: [],
+                  components: [],
+                });
+                endMatch(player1id);
+                await i.channel.send(
+                  await profilesTracker.cache.rewardGameWin(
+                    this.player1,
+                    1,
+                    true,
+                    this.betamount
+                  )
+                );
+              }
             } else {
-              this.fetchedMessage.edit({
-                content: null,
-                embeds: [
-                  {
-                    title: 'Russian Roulette',
-                    description: `You won!\nYou gained **${this.betamount} coins!**`,
-                    color: 47902,
-                  },
-                ],
-                attachments: [],
-                components: [],
-              });
-              endMatch(player1id);
-              await i.channel.send(
-                await profilesTracker.cache.rewardGameWin(
-                  this.player1,
-                  1,
-                  true,
-                  this.betamount
-                )
-              );
+              // wait 2 seconds
+              await new Promise((resolve) => setTimeout(resolve, 2000));
+
+              this.bullets += 1;
+              if (this.bullets !== 6) {
+                this.currentRoundPlayer =
+                  this.currentRoundPlayer === player1id
+                    ? this.player2id
+                    : this.player1id;
+                this.fetchedMessage.edit({
+                  content: null,
+                  embeds: [
+                    {
+                      title: 'Russian Roulette',
+                      description: `Lucky shot! ${
+                        this.currentRoundPlayer === this.player1id
+                          ? this.player1.username
+                          : this.player2.username
+                      }, it's your turn!\n**__${
+                        this.betamount
+                      }__** coins are at stake!\nIf you want to shoot this round, you've gotta add **__${
+                        this.roundCost
+                      }__** to the bet!\nYou have __**${Math.floor(
+                        100 * (1 - 1 / (7 - this.bullets))
+                      )}%**__ chance of surviving!`,
+                      color: 16775935,
+                    },
+                  ],
+                  attachments: [],
+                  components: [this.rowRusr(player1id, true)],
+                  fetchReply: true,
+                });
+              } else {
+                this.fetchedMessage.edit({
+                  content: null,
+                  embeds: [
+                    {
+                      title: 'Russian Roulette',
+                      description: `Balls of steel! ${
+                        this.currentRoundPlayer === player1id
+                          ? this.player1.username
+                          : this.player2.username
+                      } won it all! A total of __**${
+                        this.betamount
+                      }**__ coins!`,
+                      color: 47902,
+                    },
+                  ],
+                  attachments: [],
+                  components: [],
+                });
+                endMatch(player1id);
+                await i.channel.send(
+                  this.currentRoundPlayer === player1id
+                    ? await profilesTracker.cache.rewardGameWin(
+                        this.player1,
+                        1,
+                        true,
+                        this.betamount
+                      )
+                    : await profilesTracker.cache.rewardGameWin(
+                        this.player2,
+                        1,
+                        true,
+                        this.betamount
+                      )
+                );
+              }
             }
           }
           break;
         case 'giveup' + player1id:
-          this.fetchedMessage.edit({
-            content: null,
-            embeds: [
-              {
-                title: 'Russian Roulette',
-                description: `You coward!\nYou can keep the **${this.betamount} coins**!\n *Cyka Blyat!*`,
-                color: 47902,
-              },
-            ],
-            attachments: [],
-            components: [],
-          });
-          endMatch(player1id);
-          await i.channel.send(
-            await profilesTracker.cache.rewardGameWin(
-              this.player1,
-              1,
-              true,
-              this.betamount
-            )
-          );
+          if (this.mode !== 'pvp') {
+            this.fetchedMessage.edit({
+              content: null,
+              embeds: [
+                {
+                  title: 'Russian Roulette',
+                  description: `You coward!\nYou can keep the **${this.betamount} coins**!\n *Cyka Blyat!*`,
+                  color: 47902,
+                },
+              ],
+              attachments: [],
+              components: [],
+            });
+            endMatch(player1id);
+            await i.channel.send(
+              await profilesTracker.cache.rewardGameWin(
+                this.player1,
+                1,
+                true,
+                this.betamount
+              )
+            );
+          } else {
+            this.fetchedMessage.edit({
+              content: null,
+              embeds: [
+                {
+                  title: 'Russian Roulette',
+                  description: `Uh, fear of dying!? Coward! ${
+                    this.currentRoundPlayer === player1id
+                      ? this.player2.username
+                      : this.player1.username
+                  } keeps the **${this.betamount} coins**!\n`,
+                  color: 47902,
+                },
+              ],
+              attachments: [],
+              components: [],
+            });
+            endMatch(player1id);
+            await i.channel.send(
+              this.currentRoundPlayer === player1id
+                ? await profilesTracker.cache.rewardGameWin(
+                    this.player2,
+                    1,
+                    true,
+                    this.betamount
+                  )
+                : await profilesTracker.cache.rewardGameWin(
+                    this.player1,
+                    1,
+                    true,
+                    this.betamount
+                  )
+            );
+          }
       }
     });
   }
@@ -296,6 +502,6 @@ class RusrMatch {
     }
   }
 }
-module.exports = (betamount, interaction, player1obj) => {
-  return new RusrMatch(betamount, interaction, player1obj);
+module.exports = (mode, betamount, interaction, player1obj, player2obj) => {
+  return new RusrMatch(mode, betamount, interaction, player1obj, player2obj);
 };

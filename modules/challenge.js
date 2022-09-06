@@ -24,7 +24,15 @@ const challengeAnswerRow = (challengedId) => {
 };
 
 class Invite {
-  constructor(repliableObj, gameName, challengedPersonId, effect, betamount) {
+  constructor(
+    gameId,
+    repliableObj,
+    gameName,
+    challengedPersonId,
+    effect,
+    betamount
+  ) {
+    this.gameId = gameId;
     this.interaction = repliableObj;
     this.repliableObj = repliableObj;
     this.gameName = gameName;
@@ -170,12 +178,21 @@ class Invite {
             // collectors[challengerId].stop();
             // collectors[challengerId] = null;
           }
-          await this.effect(
-            'pvp',
-            this.interaction,
-            userObj,
-            this.challengedPersonObj
-          );
+          switch (this.gameId) {
+            // rps
+            case 0:
+              await this.effect('pvp', i, userObj, this.challengedPerson);
+              break;
+            // rusr
+            case 1:
+              await this.effect(
+                'pvp',
+                this.betamount,
+                i,
+                userObj,
+                this.challengedPerson
+              );
+          }
         } else {
           i.reply(
             `<@${this.challengedPersonId}>, you don't have enough coins!`
@@ -184,10 +201,12 @@ class Invite {
         // console.log('after effect');
       } else if (i.customId === 'decline' + this.challengedPersonId) {
         this.replied = true;
-        await profilesTracker.cache.sumCoinsToUser(
-          this.challengerId,
-          this.betamount
-        );
+        if (this.betamount) {
+          await profilesTracker.cache.sumCoinsToUser(
+            this.challengerId,
+            this.betamount
+          );
+        }
         await collectors[this.challengerId].stop();
         collectors[this.challengerId] = null;
         if (this.interaction.type === 0) {
@@ -230,10 +249,12 @@ class Invite {
 
       if (!this.replied) {
         if (this.interaction.type === 0) {
-          await profilesTracker.cache.sumCoinsToUser(
-            this.challengerId,
-            this.betamount
-          );
+          if (this.betamount) {
+            await profilesTracker.cache.sumCoinsToUser(
+              this.challengerId,
+              this.betamount
+            );
+          }
           await (
             await this.interaction.channel.messages.fetch(this.bot_message_id)
           ).edit({
@@ -249,10 +270,12 @@ class Invite {
           });
           collectors[this.challengerId] = null;
         } else {
-          await profilesTracker.cache.sumCoinsToUser(
-            this.challengerId,
-            this.betamount
-          );
+          if (this.betamount) {
+            await profilesTracker.cache.sumCoinsToUser(
+              this.challengerId,
+              this.betamount
+            );
+          }
           // this one still not coded & prevent invite himself
           await this.interaction.editReply({
             embeds: [
@@ -296,6 +319,7 @@ module.exports = async (
       // Rps
       case 0:
         inv = new Invite(
+          0,
           repliableObj,
           'Rock Paper Scissors',
           challengedPersonId,
@@ -305,6 +329,7 @@ module.exports = async (
       // Rusr
       case 1:
         inv = new Invite(
+          1,
           repliableObj,
           'Russian Roulette',
           challengedPersonId,

@@ -53,7 +53,9 @@ module.exports = {
       return;
     }
 
-    const challengedUserId = interaction.options.getMember('member').id;
+    const challengedUserId = interaction.options.getMember('member')
+      ? interaction.options.getMember('member').id
+      : null;
     switch (interaction.options.getSubcommand()) {
       case 'start':
         if (!checkCollectorAvailability(interaction, interaction.user.id)) {
@@ -65,7 +67,7 @@ module.exports = {
             betamount
           )
         ) {
-          rusr(betamount, interaction, interaction.user);
+          rusr('ai', betamount, interaction, interaction.user);
         } else {
           await interaction.reply("You don't have enough coins!");
         }
