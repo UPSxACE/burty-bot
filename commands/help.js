@@ -8,7 +8,7 @@ const commands = [
     'Shows the ranking of the most active members, based on activity in this server, and partner ones.',
   ],
   ['profile', 'Check your profile card.'],
-  ['profile <user>', "Check someone's else profile card."],
+  ['profile @user', "Check someone's else profile card."],
   [
     'settings username',
     'Set the username in your profile card. Leave empty to let it go back to default.',
@@ -20,8 +20,24 @@ const commands = [
   ['daily', 'Claim your daily reward.'],
   ['8ball "some words here"', 'Ask the magic 8ball something!'],
   [
-    'ship [optional1: <user>] [optional2: <user>]',
+    'ship [optional1: @user] [optional2: @user]',
     'Evaluate the love compatibility between two different users.',
+  ],
+  [
+    'rps start',
+    'Challenge the bot for a rock paper scissors match! Get some coins if you win.',
+  ],
+  [
+    'rps challenge @user [optional: <bet_ammount>]',
+    'Challenge someone for a rock paper scissors match. You can also bet your coins if you want.',
+  ],
+  [
+    'rusr start <coins_to_bet>',
+    'Play a russian roulette match alone. Survive 5 rounds to get 4x your bet, or quit in the middle for smaller rewards.',
+  ],
+  [
+    'rusr challenge @user <coins_to_bet>',
+    'Play russian roulette against **someone**, by turns. To shoot, one must raise the bet, giving up means losing all!',
   ],
   [
     'blush, cry, dab, dance, disgust, dodge, eat, laugh, lewd',

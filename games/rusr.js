@@ -27,7 +27,7 @@ const embedHelp = {
     {
       name: `\`${prefix}rps challenge @user <coins_to_bet>\``,
       value:
-        'Play against **someone** by turns. Whoever wants to shoot, needs to raise the bet, and whoever dies or gives up loses everything!',
+        'Play against **someone**, by turns. Whoever wants to shoot, needs to raise the bet, and whoever dies or gives up loses everything!',
     },
   ],
   footer: {
