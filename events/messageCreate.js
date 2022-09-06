@@ -56,7 +56,7 @@ function stringFinder(content) {
 
 module.exports = {
   name: 'messageCreate',
-  execute(message) {
+  async execute(message) {
     if (message.author.bot) return;
     // console.log(
     //  `New message on the server "${message.guild}", in the channel #${message.channel.name}. Checking if its a command.`
@@ -75,14 +75,33 @@ module.exports = {
       content = stringFinder(content);
       // content: [contentArray, hasString?]
 
+      let secondPartOfString = null;
+
+      if (content[0]) {
+        secondPartOfString = content[0][1]
+          ? message.content.slice(prefix.length + content[0][0].length + 1)
+          : null;
+      }
+
       const command = message.client.commands.get(content[0][0]);
       if (content[0][0] !== '') {
         if (command) {
-          command.executeManual
-            ? command.executeManual(message, content[0], content[1])
-            : message.reply(
-                'This command cannot be executed manually. Execute it with the slashcommands feature.'
-              );
+          try {
+            command.executeManual
+              ? await command.executeManual(
+                  message,
+                  content[0],
+                  content[1],
+                  secondPartOfString
+                )
+              : await message.reply(
+                  'This command cannot be executed manually. Execute it with the slashcommands feature.'
+                );
+          } catch {
+            await message.channel.send(
+              'There was an error while executing this command!'
+            );
+          }
         } else {
           // If the command doesn't exist it doesn't need a reply, so I commented this line below
           // message.reply("That command doesn't seem to exist!");

@@ -52,13 +52,13 @@ module.exports = {
       ],
     });
   },
-  async executeManual(message, content) {
+  async executeManual(message, content, hasString, secondPartOfString) {
     const randomIndex = Math.floor(Math.random() * replies.length);
     await message.reply({
       content: null,
       embeds: [
         {
-          title: content[1],
+          title: secondPartOfString,
           description: '🎱' + replies[randomIndex],
           color: 15512290,
         },
