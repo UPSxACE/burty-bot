@@ -44,6 +44,7 @@ module.exports = async (mode, repliableObj, userObj, userObj2) => {
 
 class RpsMatch {
   constructor(mode, repliableObj, userObj, userObj2, betamount) {
+    this.repliableObj = repliableObj;
     this.currentRoundPlayer = null;
     this.matchEndBool = false;
     this.bot_message_id = null;
@@ -56,10 +57,19 @@ class RpsMatch {
     this.client_user = repliableObj.client.user;
     this.betamount = Number(betamount) > 0 ? betamount : null;
 
-    this.effect(mode, repliableObj, userObj, userObj2);
+    // this.init(mode, repliableObj, userObj, userObj2);
   }
 
-  async effect(mode, repliableObj, userObj, userObj2) {
+  async init() {
+    await this.startGame(
+      this.mode,
+      this.repliableObj,
+      this.userObj,
+      this.userObj2
+    );
+  }
+
+  async startGame(mode, repliableObj, userObj, userObj2) {
     if (mode) {
       switch (mode) {
         case 'ai':

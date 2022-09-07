@@ -41,9 +41,11 @@ module.exports = {
     if (!checkCollectorAvailability(interaction, interaction.user.id)) {
       return;
     }
+    let rps_match = null;
     switch (interaction.options.getSubcommand()) {
       case 'start':
-        await rps('ai', interaction, interaction.user, null);
+        rps_match = await rps('ai', interaction, interaction.user, null);
+        await rps_match.init();
         break;
       case 'challenge':
         betamount = interaction.options.getNumber('bet');
@@ -81,17 +83,20 @@ module.exports = {
         // await challenge(0, message, rps);
         break;
       default:
-        await rps(null, interaction, interaction.user, null);
+        rps_match = await rps(null, interaction, interaction.user, null);
+        await rps_match.init();
     }
   },
   async executeManual(message, content) {
     if (!checkCollectorAvailability(message, message.author.id)) {
       return;
     }
+    let rps_match = null;
     const betamount = Number(content[3]);
     switch (content[1]) {
       case 'start':
-        await rps('ai', message, message.author, null);
+        rps_match = await rps('ai', message, message.author, null);
+        await rps_match.init();
         break;
       case 'challenge':
         if (content[2]) {
@@ -137,7 +142,8 @@ module.exports = {
         // await challenge(0, message, rps);
         break;
       default:
-        await rps(null, message, message.author, null);
+        rps_match = await rps(null, message, message.author, null);
+        await rps_match.init();
     }
   },
 };

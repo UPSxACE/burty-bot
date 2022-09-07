@@ -132,10 +132,12 @@ class Invite {
       });
 
     collectors[this.challengerId].on('collect', async (i) => {
+      let match = null;
       if (i.customId === 'accept' + this.challengedPersonId) {
         if (!checkCollectorAvailability(i, this.challengedPersonId)) {
           return;
         }
+        collectors[this.challengedPersonId] = 'building...';
         if (
           !this.betamount ||
           (await profilesTracker.cache.subtractCoinsToUser(
@@ -181,25 +183,28 @@ class Invite {
           switch (this.gameId) {
             // rps
             case 0:
-              await this.effect(
+              match = await this.effect(
                 'pvp',
                 i,
                 userObj,
                 this.challengedPerson,
                 this.betamount
               );
+              await match.init();
               break;
             // rusr
             case 1:
-              await this.effect(
+              match = await this.effect(
                 'pvp',
                 this.betamount,
                 i,
                 userObj,
                 this.challengedPerson
               );
+              await match.init();
           }
         } else {
+          collectors[this.challengedPersonId] = null;
           i.reply(
             `<@${this.challengedPersonId}>, you don't have enough coins!`
           );

@@ -66,6 +66,8 @@ module.exports = {
     const challengedUserId = interaction.options.getMember('member')
       ? interaction.options.getMember('member').id
       : null;
+
+    let match = null;
     switch (interaction.options.getSubcommand()) {
       case 'start':
         if (!checkCollectorAvailability(interaction, interaction.user.id)) {
@@ -77,7 +79,8 @@ module.exports = {
             betamount
           )
         ) {
-          rusr('ai', betamount, interaction, interaction.user);
+          match = rusr('ai', betamount, interaction, interaction.user);
+          await match.init();
         } else {
           await interaction.reply("You don't have enough coins!");
         }
@@ -116,6 +119,7 @@ module.exports = {
   },
   async executeManual(message, content) {
     let betamount = null;
+    let match = null;
 
     /*
 
@@ -153,7 +157,8 @@ module.exports = {
             betamount
           )
         ) {
-          rusr('ai', betamount, message, message.author);
+          match = rusr('ai', betamount, message, message.author);
+          await match.init();
         } else {
           await message.reply("You don't have enough coins!");
         }
@@ -203,7 +208,8 @@ module.exports = {
         }
         break;
       default:
-        rusr(null, null, message, message.author);
+        match = rusr(null, null, message, message.author);
+        await match.init();
     }
   },
 };

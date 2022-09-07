@@ -50,9 +50,14 @@ class RusrMatch {
     this.currentRoundPlayer = player1obj.id;
     this.roundCost = mode === 'pvp' ? Math.floor(betamount / 2) : 0;
 
-    this.startgame();
+    // this.init();
   }
-  async startgame() {
+
+  async init() {
+    await this.startGame();
+  }
+
+  async startGame() {
     if (this.mode) {
       usersPlaying[this.player1id] = {
         matchHost: this.player1id,
