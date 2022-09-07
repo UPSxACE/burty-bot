@@ -133,7 +133,7 @@ class Invite {
 
     collectors[this.challengerId].on('collect', async (i) => {
       let match = null;
-      if (i.customId === 'accept' + this.challengedPersonId) {
+      if (i.customId === 'accept' + this.challengerId) {
         if (!checkCollectorAvailability(i, this.challengedPersonId)) {
           return;
         }
