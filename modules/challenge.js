@@ -85,6 +85,7 @@ class Invite {
               },
             ],
             components: [challengeAnswerRow(this.challengerId)],
+            fetchReply: true,
           })
         ).id;
 
