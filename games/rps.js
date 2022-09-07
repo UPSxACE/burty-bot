@@ -754,5 +754,5 @@ class RpsMatch {
 }
 
 module.exports = (mode, repliableObj, userObj, userObj2, betamount) => {
-  new RpsMatch(mode, repliableObj, userObj, userObj2, betamount);
+  return new RpsMatch(mode, repliableObj, userObj, userObj2, betamount);
 };
