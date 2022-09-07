@@ -283,6 +283,7 @@ class RusrMatch {
                 components: [],
               });
             }
+
             await i.channel.send(
               this.currentRoundPlayer === player1id
                 ? await profilesTracker.cache.rewardGameWin(
@@ -291,13 +292,15 @@ class RusrMatch {
                     true,
                     this.betamount
                   )
-                : await profilesTracker.cache.rewardGameWin(
-                    this.player1,
-                    1,
-                    true,
-                    this.betamount
-                  )
+                : this.player2 &&
+                    (await profilesTracker.cache.rewardGameWin(
+                      this.player1,
+                      1,
+                      true,
+                      this.betamount
+                    ))
             );
+
             endMatch(player1id);
           } else {
             this.fetchedMessage.edit({
