@@ -48,6 +48,7 @@ module.exports = {
         await rps_match.init();
         break;
       case 'challenge':
+        console.log(interaction.options.getUser('member').id);
         betamount = interaction.options.getNumber('bet');
         try {
           if (betamount > 0) {

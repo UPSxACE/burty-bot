@@ -216,7 +216,7 @@ class Invite {
           );
         }
         // console.log('after effect');
-      } else if (i.customId === 'decline' + this.challengedPersonId) {
+      } else if (i.customId === 'decline' + this.challengerId) {
         this.replied = true;
         if (this.betamount) {
           await profilesTracker.cache.sumCoinsToUser(
