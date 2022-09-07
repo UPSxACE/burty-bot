@@ -89,14 +89,7 @@ class Invite {
           })
         ).id;
 
-        this.buildCollector(
-          this.challengedPersonId,
-          this.repliableObj,
-          this.user,
-          this.effect,
-          this.challengedPerson,
-          this.betamount
-        );
+        this.buildCollector();
       }
     }
   }
