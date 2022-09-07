@@ -84,7 +84,7 @@ class Invite {
                 color: 15512290,
               },
             ],
-            components: [challengeAnswerRow(this.challengedPersonId)],
+            components: [challengeAnswerRow(this.challengerId)],
           })
         ).id;
 
@@ -119,8 +119,8 @@ class Invite {
       }
       return (
         i.user.id === this.challengedPersonId &&
-        (i.customId === 'accept' + this.challengedPersonId ||
-          i.customId === 'decline' + this.challengedPersonId)
+        (i.customId === 'accept' + this.challengerId ||
+          i.customId === 'decline' + this.challengerId)
       );
     };
     // const collector = interaction.channel.createMessageCollector({
