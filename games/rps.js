@@ -316,7 +316,9 @@ class RpsMatch {
     // hopefully this code below won't break anything lol
     if (player2Obj && collectors[player2Obj.id]) {
       // console.log('Another collector exists');
-      collectors[player2Obj.id].stop();
+      if (collectors[player2Obj.id].stop) {
+        collectors[player2Obj.id].stop();
+      }
     }
 
     // `m` is a message object that will be passed through the filter function
