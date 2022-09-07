@@ -15,9 +15,6 @@ module.exports = {
         .setDescription('The user whose profile you want to check')
     ),
   async execute(interaction) {
-    if (!checkCollectorAvailability(interaction, interaction.user.id)) {
-      return;
-    }
     const target_user = interaction.options.getUser('user');
     // If it has a target, then check that target's profile
     try {
@@ -28,9 +25,6 @@ module.exports = {
     }
   },
   async executeManual(message, content, hasString) {
-    if (!checkCollectorAvailability(message, message.author.id)) {
-      return;
-    }
     if (content[1]) {
       try {
         await effect(message, transformMention(content[1]), message.author);
@@ -424,7 +418,7 @@ async function effect(interaction, target, userArg) {
       });
 
     // this collector should be destroyed anytime if needed
-    // collectors[userArg.id].notImportant = true;
+    collectors[userArg.id].notImportant = true;
 
     collectors[userArg.id].on('collect', async (i) => {
       if (i.customId === next) {

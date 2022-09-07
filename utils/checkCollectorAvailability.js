@@ -37,6 +37,7 @@ module.exports = (repliableObj, userId, userId2) => {
       }
       return false;
     } else {
+      console.log('THIS');
       if (repliableObj) {
         repliableObj.reply(`<@${userId}>, you are currently not available!`);
       }
@@ -53,6 +54,7 @@ module.exports = (repliableObj, userId, userId2) => {
       }
       collectors[userId] = null;
     } else {
+      console.log('THAT');
       if (repliableObj) {
         repliableObj.reply(`<@${userId}>, you are currently not available!`);
       }

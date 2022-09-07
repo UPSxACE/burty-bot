@@ -282,24 +282,24 @@ class RusrMatch {
                 attachments: [],
                 components: [],
               });
-            }
 
-            await i.channel.send(
-              this.currentRoundPlayer === player1id
-                ? await profilesTracker.cache.rewardGameWin(
-                    this.player2,
-                    1,
-                    true,
-                    this.betamount
-                  )
-                : this.player2 &&
-                    (await profilesTracker.cache.rewardGameWin(
-                      this.player1,
+              await i.channel.send(
+                this.currentRoundPlayer === player1id
+                  ? await profilesTracker.cache.rewardGameWin(
+                      this.player2,
                       1,
                       true,
                       this.betamount
-                    ))
-            );
+                    )
+                  : this.player2 &&
+                      (await profilesTracker.cache.rewardGameWin(
+                        this.player1,
+                        1,
+                        true,
+                        this.betamount
+                      ))
+              );
+            }
 
             endMatch(player1id);
           } else {
