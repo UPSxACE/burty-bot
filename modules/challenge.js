@@ -112,16 +112,20 @@ class Invite {
     // const filter = (m) => m.content.includes('next');
     const filter = (i) => {
       // console.log('entered filter');
-      if (i.user.id !== this.challengedPersonId) {
-        i.reply(
-          `<@${i.user.id}> don't press someone's else buttons! That's rude! >:T`
+      if (i.message && i.message.id === this.bot_message_id) {
+        if (i.user.id !== this.challengedPersonId) {
+          i.reply(
+            `<@${i.user.id}> don't press someone's else buttons! That's rude! >:T`
+          );
+        }
+        return (
+          i.user.id === this.challengedPersonId &&
+          (i.customId === 'accept' + this.challengerId ||
+            i.customId === 'decline' + this.challengerId)
         );
+      } else {
+        return false;
       }
-      return (
-        i.user.id === this.challengedPersonId &&
-        (i.customId === 'accept' + this.challengerId ||
-          i.customId === 'decline' + this.challengerId)
-      );
     };
     // const collector = interaction.channel.createMessageCollector({
     collectors[this.challengerId] =
@@ -137,7 +141,7 @@ class Invite {
         if (!checkCollectorAvailability(i, this.challengedPersonId)) {
           return;
         }
-        collectors[this.challengedPersonId] = 'building...';
+        collectors[this.challengedPersonId] = 'building match...';
         if (
           !this.betamount ||
           (await profilesTracker.cache.subtractCoinsToUser(
@@ -203,6 +207,8 @@ class Invite {
               );
               await match.init();
           }
+          // remove the "building...";
+          collectors[this.challengedPersonId] = null;
         } else {
           collectors[this.challengedPersonId] = null;
           i.reply(
