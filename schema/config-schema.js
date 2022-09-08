@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const configSchema = new mongoose.Schema({
-  // _id = user ID
+  // _id = server ID
   _id: { type: String },
   setlogging: {
     type: String,
