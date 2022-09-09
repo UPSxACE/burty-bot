@@ -181,7 +181,8 @@ client.on('guildMemberAdd', async (member) => {
               specialInvitesTracker.inviteUsed(
                 member.guild.id,
                 usedInvite.code,
-                member.user.id
+                member.user.id,
+                member
               );
             }
           }

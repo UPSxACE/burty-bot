@@ -2,6 +2,7 @@
 // Later this will be replaced by a foreach loop in client.guilds.cache
 
 const specialInvitesSchema = require('../schema/specialInvites-schema');
+const profilesTracker = require('../modules/profilesTracker');
 
 // client object will be received as the init and restart functions arguments
 const importantGuilds = [
@@ -56,23 +57,18 @@ module.exports = {
     }
 
     console.log('Special Invites Cached!');
-    console.log(this.trackedInvitesCache);
+    // console.log(this.trackedInvitesCache);
   },
-  async inviteUsed(guildId, codeId, memberId) {
-    //inviteCounts update
+  async inviteUsed(guildId, codeId, memberId, member) {
+    // inviteCounts update
     const inviteCountsObject = {};
     inviteCountsObject[codeId] = {
       $ifNull: [{ $add: ['$inviteCounts.' + codeId, 1] }, 1],
     };
 
-    //invitedList update
-    const invitedListObject = {};
+    // invitedList update
     const pushObject = {};
-
-    //pushObject[codeId] = memberId;
-
     pushObject['invitedList.' + codeId] = memberId;
-    // invitedListObject[codeId] = { $push: pushObject };
 
     await specialInvitesSchema.updateOne(
       {
@@ -96,6 +92,34 @@ module.exports = {
         $push: pushObject,
       }
     );
+
+    // reward user
+    try {
+      const inviteData = await specialInvitesSchema.findOne({
+        _id: guildId,
+      });
+      if (inviteData['inviteRewards']) {
+        const inviteRewardsObject = inviteData['inviteRewards'][codeId];
+
+        if (inviteRewardsObject) {
+          if (inviteRewardsObject['role']) {
+            member.roles.add(inviteRewardsObject['role']);
+          }
+
+          if (inviteRewardsObject['coins']) {
+            await profilesTracker.cache.sumCoinsToUser(
+              memberId,
+              inviteRewardsObject['coins']
+            );
+          }
+
+          // console.log('rewarded user with success!');
+        }
+      }
+    } catch (err) {
+      console.log(err);
+      console.log('error rewarding special invite');
+    }
   },
   /*
   FOR NOW INIT WILL BE USED TO RESTART TOO!
