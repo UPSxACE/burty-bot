@@ -6,6 +6,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const mongoose = require('mongoose');
 const profilesTracker = require('./modules/profilesTracker');
+const specialInvitesTracker = require('./modules/specialInvitesTracker');
 
 // shut down experimental warnings
 const originalEmit = process.emit;
@@ -128,11 +129,13 @@ client.on('inviteCreate', async (invite) => {
 });
 
 client.once('ready', () => {
+  specialInvitesTracker.init();
+
   client.guilds.cache.forEach((guild) => {
     guild.invites
       .fetch()
       .then((invites) => {
-        console.log('INVITES CACHED');
+        console.log('INVITES CACHED FOR GUILD' + guild.id);
         const codeUses = new Map();
         invites.each((inv) => codeUses.set(inv.code, inv.uses));
 
@@ -164,6 +167,27 @@ client.on('guildMemberAdd', async (member) => {
       usedInvite.inviterId,
       member.id
     );
+    if (specialInvitesTracker.guildsCache) {
+      console.log(member.guild.id);
+      if (specialInvitesTracker.guildsCache.includes(member.guild.id)) {
+        if (specialInvitesTracker.trackedInvitesCache) {
+          if (specialInvitesTracker.trackedInvitesCache[member.guild.id]) {
+            if (
+              specialInvitesTracker.trackedInvitesCache[
+                member.guild.id
+              ].includes(usedInvite.code)
+            ) {
+              console.log('WORKED!');
+              specialInvitesTracker.inviteUsed(
+                member.guild.id,
+                usedInvite.code,
+                member.user.id
+              );
+            }
+          }
+        }
+      }
+    }
   } catch (err) {
     console.log('OnGuildMemberAdd Error:', err);
   }
