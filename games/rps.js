@@ -670,7 +670,9 @@ class RpsMatch {
                 this.userObj,
                 this.userObj2 ? this.userObj2 : this.client_user,
                 false,
-                this.userObj.username,
+                this.currentRoundPlayer === this.userObj.id
+                  ? this.userObj.username
+                  : this.userObj2.username,
                 this.score1,
                 this.score2
               ),

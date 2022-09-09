@@ -48,7 +48,7 @@ class RusrMatch {
     this.player2 = player2obj ? player2obj : null;
     this.player2id = player2obj ? player2obj.id : null;
     this.currentRoundPlayer = player1obj.id;
-    this.roundCost = mode === 'pvp' ? Math.floor(betamount / 2) : 0;
+    this.roundCost = mode === 'pvp' ? Math.floor(betamount / 4) : 0;
 
     // this.init();
   }
