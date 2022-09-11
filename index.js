@@ -157,10 +157,6 @@ client.on('guildMemberAdd', async (member) => {
     // console.log('Cached', [...cachedInvites.keys()]);
     // console.log('New',[...newInvites.values()].map((inv) => inv.code));
     // console.log('Used', usedInvite);
-    console.log(
-      `The code ${usedInvite.code} was just used by ${member.user.username}.`
-    );
-    console.log(`Invite owner ID: ${usedInvite.inviterId}`);
 
     profilesTracker.cache.updateInvite(
       member.guild.id,
@@ -177,7 +173,6 @@ client.on('guildMemberAdd', async (member) => {
                 member.guild.id
               ].includes(usedInvite.code)
             ) {
-              console.log('WORKED!');
               specialInvitesTracker.inviteUsed(
                 member.guild.id,
                 usedInvite.code,
@@ -189,6 +184,10 @@ client.on('guildMemberAdd', async (member) => {
         }
       }
     }
+    console.log(
+      `The code ${usedInvite.code} was just used by ${member.user.username}.`
+    );
+    console.log(`Invite owner ID: ${usedInvite.inviterId}`);
   } catch (err) {
     console.log('OnGuildMemberAdd Error:', err);
   }
