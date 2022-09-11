@@ -7,6 +7,8 @@ const transformMention = require('../utils/transformMention');
 const profilesTracker = require('../modules/profilesTracker');
 
 async function effect(repliableObj, messages_limit) {
+  let rewarded_people_count = 0;
+  let rewarded_people_coins = 0;
   /*
     await message
       .reply(String(Math.floor(Math.random() * 7)))
@@ -118,7 +120,13 @@ async function effect(repliableObj, messages_limit) {
       ? Object.keys(message_map.get('reward'))
       : [];
 
+    // Reward array
+    const rewardArray = message_map.get('reward');
+
+    // Iterate through each ID in the Set of user IDs
     for (const userID of userSet) {
+      let rewarded = false;
+
       // Variable that will store the new values of the reward checks
       const newRewardChecks = currentChannelReactTracker.get(message_id_key)
         ? {
@@ -130,15 +138,18 @@ async function effect(repliableObj, messages_limit) {
           };
 
       for (const reward_type_var in ObjKeys) {
-        // Iterate through each ID in the Set of user IDs
-
         // If reward was tracked before, and wasn't delivered yet, reward player
         if (newRewardChecks[ObjKeys[reward_type_var]] === false) {
           // REWARD!
           switch (ObjKeys[reward_type_var]) {
             case 'coins':
+              rewarded = true;
               // console.log('COINS!!!');
-              await profilesTracker.cache.sumCoinsToUser(userID, 10);
+              await profilesTracker.cache.sumCoinsToUser(
+                userID,
+                rewardArray['coins']
+              );
+              rewarded_people_coins += rewardArray['coins'];
               break;
             default:
               console.log(ObjKeys[reward_type_var]);
@@ -150,11 +161,24 @@ async function effect(repliableObj, messages_limit) {
         // Update the user's reward checks
         message_map.set(userID, newRewardChecks);
       }
+
+      if (rewarded === true) {
+        rewarded_people_count += 1;
+      }
     }
 
     // (abandoned) If message_map has more than just "reward", store it
     message_map.size > 0 &&
       currentChannelReactTracker.set(String(message_id_key), message_map);
+
+    let message = '';
+    if (rewarded_people_count) {
+      message += `\nPeople rewarded: ${rewarded_people_count}`;
+    }
+    if (rewarded_people_coins) {
+      message += `\nCoins rewarded: ${rewarded_people_coins}`;
+    }
+    return message;
   }
 
   reactionsTrackerObject['trackedChannels'] = {};
@@ -196,7 +220,9 @@ module.exports = {
       content: 'Rewarding reactions...',
       ephemeral: true,
     });
-    await effect(interaction);
-    await interaction.editReply('Reactions rewarded successfully!');
+    const rewardedPeopleMessage = await effect(interaction);
+    await interaction.editReply(
+      'Reactions rewarded successfully!' + rewardedPeopleMessage
+    );
   },
 };
